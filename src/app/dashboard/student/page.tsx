@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Camera, ArrowLeft } from "lucide-react";
+import { Camera, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 
 export default async function StudentDashboard() {
@@ -80,6 +80,18 @@ export default async function StudentDashboard() {
             <CardTitle>Booking History</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Waiting copy for proof submitted */}
+            {orders?.some((o) => o.status === "PROOF_SUBMITTED") && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <p className="text-blue-800 text-sm">
+                    您的付款凭证已成功提交。当前档期已为您安全锁定。摄影师正为您核对账单中（最长不超过12小时）。若超时未处理，平台官方客服将直接介入协助，请您放心。
+                  </p>
+                </div>
+              </div>
+            )}
+
             {!orders || orders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <p className="mb-4">No bookings yet.</p>
@@ -92,6 +104,7 @@ export default async function StudentDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Order No</TableHead>
+                    <TableHead>Payment Ref</TableHead>
                     <TableHead>Photographer</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Time</TableHead>
@@ -115,6 +128,11 @@ export default async function StudentDashboard() {
                       <TableRow key={order.id}>
                         <TableCell className="font-mono text-xs">
                           {order.order_no}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-mono">
+                            {order.payment_ref}
+                          </Badge>
                         </TableCell>
                         <TableCell>{photographer?.full_name}</TableCell>
                         <TableCell>{slot?.slot_date}</TableCell>

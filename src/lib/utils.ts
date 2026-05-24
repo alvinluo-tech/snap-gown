@@ -31,3 +31,13 @@ export function generateOrderNo(): string {
   }
   return `ORD-${date}-${suffix}`;
 }
+
+/** Generate payment reference code: D-8A39 */
+export function generatePaymentRef(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let suffix = "";
+  for (let i = 0; i < 4; i++) {
+    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `D-${suffix}`;
+}

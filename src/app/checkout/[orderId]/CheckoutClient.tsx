@@ -23,6 +23,7 @@ interface CheckoutProps {
   order: {
     id: string;
     order_no: string;
+    payment_ref: string;
     status: string;
     total_amount_pence: number;
     payment_proof_url: string | null;
@@ -140,6 +141,26 @@ export function CheckoutClient({
         {/* Payment Section */}
         {isPending && (
           <>
+            {/* Payment Reference Code */}
+            <Card className="mb-6 border-red-200 bg-red-50">
+              <CardContent className="p-4">
+                <p className="font-bold text-red-800 text-lg mb-2">
+                  请扫描下方微信二维码支付共计 ¥{amountRMB} 元（折合 £{amountGBP}）
+                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-red-700">【极重要警告】请务必在微信转账的【添加备注/说明】中填写此参考码：</span>
+                </div>
+                <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-3 text-center">
+                  <span className="text-3xl font-mono font-bold text-red-600 tracking-widest">
+                    {order.payment_ref}
+                  </span>
+                </div>
+                <p className="text-sm text-red-600 mt-2">
+                  否则摄影师将无法为您确认档期！
+                </p>
+              </CardContent>
+            </Card>
+
             {/* Timer Warning */}
             <Card className="mb-6 border-orange-200 bg-orange-50">
               <CardContent className="flex items-center gap-3 p-4">
