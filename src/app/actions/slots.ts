@@ -2,7 +2,7 @@
 
 import { createSupabaseServer } from "@/lib/supabase-server";
 
-// Auto-release expired holds before any read
+// Auto-release expired holds and cancel expired orders
 async function cleanupExpiredHolds(supabase: Awaited<ReturnType<typeof createSupabaseServer>>) {
   await supabase.rpc("release_expired_holds");
 }
@@ -26,6 +26,15 @@ export async function getAvailableSlots(schoolSlug: string, date: string) {
 export async function getPhotographerSlots(photographerId: string) {
   const supabase = await createSupabaseServer();
   await cleanupExpiredHolds(supabase);
+
+  // Check if photographer is suspended - return empty if so
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_status")
+    .eq("id", photographerId)
+    .single();
+
+  if (profile?.account_status === "SUSPENDED") return [];
 
   const { data, error } = await supabase
     .from("availability_slots")
@@ -76,7 +85,12 @@ export async function createSlot(formData: FormData) {
     .select()
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("This time slot already exists");
+    }
+    throw new Error(error.message);
+  }
   return data;
 }
 
@@ -109,13 +123,11 @@ export async function batchCreateSlots(formData: FormData) {
   const endTime = formData.get("end_time") as string;
   const schoolSlug = (formData.get("school_slug") as string) || "durham";
 
-  // Generate date range
   const slots = [];
   const current = new Date(startDate);
   const end = new Date(endDate);
 
   while (current <= end) {
-    // Skip if it's not a valid day (e.g., weekends can be configured)
     slots.push({
       photographer_id: user.id,
       school_slug: schoolSlug,
@@ -131,6 +143,11 @@ export async function batchCreateSlots(formData: FormData) {
     .insert(slots)
     .select();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("Some time slots already exist (duplicate dates/times)");
+    }
+    throw new Error(error.message);
+  }
   return data;
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createSupabaseServer } from "@/lib/supabase-server";
 import { supabase } from "@/lib/supabase";
 import {
   Card,
@@ -9,9 +10,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Camera, GraduationCap, MapPin, Clock } from "lucide-react";
+import { Camera, GraduationCap, MapPin, Clock, Shield } from "lucide-react";
 
 export default async function HomePage() {
+  // Check if user is admin
+  let isAdmin = false;
+  try {
+    const serverSupabase = await createSupabaseServer();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await serverSupabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      isAdmin = profile?.role === "ADMIN";
+    }
+  } catch {
+    // Not logged in
+  }
+
   // Fetch approved photographers with available slots
   const { data: photographers } = await supabase
     .from("profiles")
@@ -37,6 +55,14 @@ export default async function HomePage() {
             <Link href="/dashboard/student">
               <Button>Dashboard</Button>
             </Link>
+            {isAdmin && (
+              <Link href="/dashboard/admin">
+                <Button variant="secondary">
+                  <Shield className="h-4 w-4 mr-1" />
+                  Admin
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>

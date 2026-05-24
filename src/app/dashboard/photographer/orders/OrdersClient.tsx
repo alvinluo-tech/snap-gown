@@ -39,6 +39,7 @@ import { CheckCircle, XCircle, Eye, Clock } from "lucide-react";
 interface OrderWithRelations {
   id: string;
   order_no: string;
+  payment_ref: string;
   status: string;
   total_amount_pence: number;
   payment_proof_url: string | null;
@@ -138,6 +139,7 @@ export function PhotographerOrdersClient({
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
+                  <TableHead>Payment Ref</TableHead>
                   <TableHead>Student</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Amount</TableHead>
@@ -151,6 +153,11 @@ export function PhotographerOrdersClient({
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-xs">
                       {order.order_no}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono">
+                        {order.payment_ref}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div>

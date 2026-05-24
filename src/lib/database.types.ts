@@ -58,6 +58,109 @@ export type Database = {
           },
         ]
       }
+      commission_ledger: {
+        Row: {
+          created_at: string | null
+          id: string
+          ledger_status: Database["public"]["Enums"]["ledger_status"]
+          note: string | null
+          order_id: string
+          photographer_id: string
+          platform_fee_pence: number
+          settled_at: string | null
+          settled_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ledger_status?: Database["public"]["Enums"]["ledger_status"]
+          note?: string | null
+          order_id: string
+          photographer_id: string
+          platform_fee_pence: number
+          settled_at?: string | null
+          settled_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ledger_status?: Database["public"]["Enums"]["ledger_status"]
+          note?: string | null
+          order_id?: string
+          photographer_id?: string
+          platform_fee_pence?: number
+          settled_at?: string | null
+          settled_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_ledger_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_ledger_settled_by_fkey"
+            columns: ["settled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_logs: {
+        Row: {
+          actor_id: string
+          created_at: string | null
+          from_status: Database["public"]["Enums"]["order_status"] | null
+          id: string
+          note: string | null
+          order_id: string
+          to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string | null
+          from_status?: Database["public"]["Enums"]["order_status"] | null
+          id?: string
+          note?: string | null
+          order_id: string
+          to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string | null
+          from_status?: Database["public"]["Enums"]["order_status"] | null
+          id?: string
+          note?: string | null
+          order_id?: string
+          to_status?: Database["public"]["Enums"]["order_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           commission_rate_pct: number
@@ -66,6 +169,7 @@ export type Database = {
           id: string
           order_no: string
           payment_proof_url: string | null
+          payment_ref: string
           photographer_id: string
           platform_fee_pence: number
           proof_submitted_at: string | null
@@ -81,6 +185,7 @@ export type Database = {
           id?: string
           order_no: string
           payment_proof_url?: string | null
+          payment_ref: string
           photographer_id: string
           platform_fee_pence: number
           proof_submitted_at?: string | null
@@ -96,6 +201,7 @@ export type Database = {
           id?: string
           order_no?: string
           payment_proof_url?: string | null
+          payment_ref?: string
           photographer_id?: string
           platform_fee_pence?: number
           proof_submitted_at?: string | null
@@ -182,6 +288,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_confirm_order: {
+        Args: { admin_id: string; target_order_id: string }
+        Returns: undefined
+      }
+      admin_reject_order: {
+        Args: { admin_id: string; reason?: string; target_order_id: string }
+        Returns: undefined
+      }
       increment_commission_owed: {
         Args: { amount_pence: number; target_photographer_id: string }
         Returns: undefined
@@ -191,6 +305,7 @@ export type Database = {
     Enums: {
       account_status: "ACTIVE" | "SUSPENDED"
       approval_status: "PENDING" | "APPROVED" | "REJECTED"
+      ledger_status: "PENDING" | "SETTLED" | "WAIVED"
       order_status:
         | "PENDING_PAYMENT"
         | "PROOF_SUBMITTED"
@@ -329,6 +444,7 @@ export const Constants = {
     Enums: {
       account_status: ["ACTIVE", "SUSPENDED"],
       approval_status: ["PENDING", "APPROVED", "REJECTED"],
+      ledger_status: ["PENDING", "SETTLED", "WAIVED"],
       order_status: [
         "PENDING_PAYMENT",
         "PROOF_SUBMITTED",

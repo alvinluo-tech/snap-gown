@@ -31,6 +31,7 @@ export default async function CheckoutPage({ params }: PageProps) {
       order={{
         id: order.id,
         order_no: order.order_no,
+        payment_ref: order.payment_ref,
         status: order.status,
         total_amount_pence: order.total_amount_pence,
         payment_proof_url: order.payment_proof_url,
