@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import { supabase } from "@/lib/supabase";
 import {
   Card,
   CardContent,
@@ -10,27 +9,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Camera, GraduationCap, MapPin, Clock, Shield } from "lucide-react";
+import { Camera, GraduationCap, MapPin, Clock, Shield, LogOut } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 
 export default async function HomePage() {
-  // Check if user is admin
-  let isAdmin = false;
-  try {
-    const serverSupabase = await createSupabaseServer();
-    const { data: { user } } = await serverSupabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await serverSupabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      isAdmin = profile?.role === "ADMIN";
-    }
-  } catch {
-    // Not logged in
+  const supabase = await createSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let profile: { role: string; full_name: string } | null = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role, full_name")
+      .eq("id", user.id)
+      .single();
+    profile = data;
   }
 
-  // Fetch approved photographers with available slots
+  const isAdmin = profile?.role === "ADMIN";
+
+  // Fetch approved photographers
   const { data: photographers } = await supabase
     .from("profiles")
     .select("id, full_name, bio, gowns_json, account_status")
@@ -39,29 +37,50 @@ export default async function HomePage() {
     .eq("account_status", "ACTIVE")
     .limit(20);
 
+  const dashboardHref =
+    profile?.role === "PHOTOGRAPHER"
+      ? "/dashboard/photographer/orders"
+      : profile?.role === "ADMIN"
+        ? "/dashboard/admin"
+        : "/dashboard/student";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Camera className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">SnapGown</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
-            <Link href="/auth">
-              <Button variant="outline">Login</Button>
-            </Link>
-            <Link href="/dashboard/student">
-              <Button>Dashboard</Button>
-            </Link>
-            {isAdmin && (
-              <Link href="/dashboard/admin">
-                <Button variant="secondary">
-                  <Shield className="h-4 w-4 mr-1" />
-                  Admin
-                </Button>
-              </Link>
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {profile?.full_name || user.email}
+                </span>
+                <Link href={dashboardHref}>
+                  <Button>Dashboard</Button>
+                </Link>
+                {isAdmin && (
+                  <Link href="/dashboard/admin">
+                    <Button variant="secondary">
+                      <Shield className="h-4 w-4 mr-1" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link href="/auth">
+                  <Button variant="outline">Login</Button>
+                </Link>
+                <Link href="/auth?tab=register">
+                  <Button>Get Started</Button>
+                </Link>
+              </>
             )}
           </div>
         </div>
