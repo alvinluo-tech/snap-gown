@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Camera, GraduationCap, MapPin, Clock, Shield, LogOut } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default async function HomePage() {
   const supabase = await createSupabaseServer();
@@ -71,6 +72,7 @@ export default async function HomePage() {
                   </Link>
                 )}
                 <LogoutButton />
+                <ThemeToggle />
               </>
             ) : (
               <>
@@ -80,6 +82,7 @@ export default async function HomePage() {
                 <Link href="/auth?tab=register">
                   <Button>Get Started</Button>
                 </Link>
+                <ThemeToggle />
               </>
             )}
           </div>
