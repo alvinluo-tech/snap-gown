@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Camera, Clock, ArrowLeft, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import COPY from "@/lib/constants/copy";
 
 interface CheckoutProps {
   order: {
@@ -145,10 +146,10 @@ export function CheckoutClient({
             <Card className="mb-6 border-destructive/20 bg-destructive/10">
               <CardContent className="p-4">
                 <p className="font-bold text-destructive text-lg mb-2">
-                  请扫描下方微信二维码支付共计 ¥{amountRMB} 元（折合 £{amountGBP}）
+                  {COPY.CHECKOUT.WECHAT_PAY_INSTRUCTION(amountRMB, amountGBP)}
                 </p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-destructive">【极重要警告】请务必在微信转账的【添加备注/说明】中填写此参考码：</span>
+                  <span className="text-destructive">{COPY.CHECKOUT.REF_CODE_WARNING}</span>
                 </div>
                 <div className="bg-background border-2 border-dashed border-destructive/30 rounded-lg p-3 text-center">
                   <span className="text-3xl font-mono font-bold text-destructive tracking-widest">
@@ -156,7 +157,7 @@ export function CheckoutClient({
                   </span>
                 </div>
                 <p className="text-sm text-destructive mt-2">
-                  否则摄影师将无法为您确认档期！
+                  {COPY.CHECKOUT.REF_CODE_CONSEQUENCE}
                 </p>
               </CardContent>
             </Card>
@@ -167,11 +168,10 @@ export function CheckoutClient({
                 <Clock className="h-5 w-5 text-warning" />
                 <div>
                   <p className="font-medium text-warning">
-                    30-Minute Payment Window
+                    {COPY.CHECKOUT.PAYMENT_WINDOW}
                   </p>
                   <p className="text-sm text-warning">
-                    Transfer ¥{amountRMB} via WeChat to the photographer, then
-                    upload your payment screenshot below.
+                    {COPY.CHECKOUT.PAYMENT_WINDOW_DESC(amountRMB)}
                   </p>
                 </div>
               </CardContent>
@@ -212,10 +212,10 @@ export function CheckoutClient({
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="text-lg">
-                  Upload Payment Proof
+                  {COPY.CHECKOUT.UPLOAD_PROOF}
                 </CardTitle>
                 <CardDescription>
-                  Upload a screenshot of your WeChat payment confirmation
+                  {COPY.CHECKOUT.PROOF_SUBMITTED_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -240,11 +240,10 @@ export function CheckoutClient({
             <CardContent className="p-6 text-center">
               <Clock className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="text-lg font-bold text-primary mb-2">
-                Payment Proof Submitted
+                {COPY.CHECKOUT.PROOF_SUBMITTED}
               </h3>
               <p className="text-primary">
-                The photographer has 12 hours to verify your payment. You will
-                be notified once confirmed.
+                {COPY.CHECKOUT.PROOF_SUBMITTED_DESC}
               </p>
               {order.payment_proof_url && (
                 <img
@@ -261,11 +260,10 @@ export function CheckoutClient({
           <Card className="border-primary/20 bg-primary/10">
             <CardContent className="p-6 text-center">
               <h3 className="text-lg font-bold text-primary mb-2">
-                Booking Confirmed!
+                {COPY.CHECKOUT.BOOKING_CONFIRMED}
               </h3>
               <p className="text-primary">
-                Your graduation photoshoot is confirmed. See you on{" "}
-                {slot.slot_date}!
+                {COPY.CHECKOUT.BOOKING_CONFIRMED_DESC(slot.slot_date)}
               </p>
             </CardContent>
           </Card>

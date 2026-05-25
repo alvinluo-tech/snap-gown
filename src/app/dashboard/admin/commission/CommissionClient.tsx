@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Search, DollarSign } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 interface CommissionEntry {
   id: string;
@@ -96,7 +97,7 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
       open: true,
       title: "Waive Commission?",
       description:
-        "This will免除 this commission and reduce the photographer's debt. Are you sure?",
+        COPY.ADMIN.WAIVE_DIALOG_DESC,
       action: async () => {
         setLoading(true);
         try {

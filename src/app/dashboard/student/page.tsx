@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Camera, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 export default async function StudentDashboard() {
   const supabase = await createSupabaseServer();
@@ -86,7 +87,7 @@ export default async function StudentDashboard() {
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-primary mt-0.5" />
                   <p className="text-primary text-sm">
-                    您的付款凭证已成功提交。当前档期已为您安全锁定。摄影师正为您核对账单中（最长不超过12小时）。若超时未处理，平台官方客服将直接介入协助，请您放心。
+                    {COPY.STUDENT.PROOF_SUBMITTED_NOTICE}
                   </p>
                 </div>
               </div>
