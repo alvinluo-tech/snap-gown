@@ -11,13 +11,18 @@ export async function getAvailableSlots(schoolSlug: string, date: string) {
   const supabase = await createSupabaseServer();
   await cleanupExpiredHolds(supabase);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("availability_slots")
     .select("*, profiles!photographer_id(full_name, bio, gowns_json, wechat_qr_url, account_status)")
     .eq("school_slug", schoolSlug)
-    .eq("slot_date", date)
     .eq("status", "AVAILABLE")
     .order("start_time");
+
+  if (date) {
+    query = query.eq("slot_date", date);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return data;
