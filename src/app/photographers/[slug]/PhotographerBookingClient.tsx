@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Camera, ArrowLeft } from "lucide-react";
 import { penceToPounds, penceToRMB } from "@/lib/utils";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 interface Photographer {
   id: string;
@@ -64,11 +65,11 @@ export function PhotographerBookingClient({
         photographer.id,
         DEFAULT_PRICE_PENCE
       );
-      toast.success("Slot reserved! Complete payment within 30 minutes.");
+      toast.success(COPY.PHOTOGRAPHER_PAGE.SLOT_RESERVED);
       router.push(`/checkout/${order.id}`);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Booking failed"
+        err instanceof Error ? err.message : COPY.PHOTOGRAPHER_PAGE.BOOKING_FAILED
       );
     }
     setBooking(false);
@@ -85,7 +86,7 @@ export function PhotographerBookingClient({
             </Button>
           </Link>
           <Camera className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">SnapGown</span>
+          <span className="text-xl font-bold">{COPY.BRAND.NAME}</span>
         </div>
       </header>
 
@@ -97,7 +98,7 @@ export function PhotographerBookingClient({
               <CardTitle className="text-2xl">
                 {photographer.full_name}
               </CardTitle>
-              <Badge>Photographer</Badge>
+              <Badge>{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
             </div>
             {photographer.bio && (
               <CardDescription>{photographer.bio}</CardDescription>
@@ -106,11 +107,11 @@ export function PhotographerBookingClient({
           <CardContent>
             <div className="flex items-center gap-4 text-sm">
               <span className="font-medium">
-                Price: £{penceToPounds(DEFAULT_PRICE_PENCE)} (¥
+                {COPY.PHOTOGRAPHER_PAGE.PRICE_LABEL} £{penceToPounds(DEFAULT_PRICE_PENCE)} (¥
                 {penceToRMB(DEFAULT_PRICE_PENCE)})
               </span>
               <span className="text-muted-foreground">
-                Payment via WeChat
+                {COPY.PHOTOGRAPHER_PAGE.PAYMENT_VIA_WECHAT}
               </span>
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
@@ -127,10 +128,10 @@ export function PhotographerBookingClient({
         </Card>
 
         {/* Booking Calendar */}
-        <h2 className="text-xl font-bold mb-4">Available Time Slots</h2>
+        <h2 className="text-xl font-bold mb-4">{COPY.PHOTOGRAPHER_PAGE.AVAILABLE_SLOTS}</h2>
         {booking && (
           <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm">
-            Reserving your slot... Please wait.
+            {COPY.PHOTOGRAPHER_PAGE.RESERVING}
           </div>
         )}
         <CalendarScheduler

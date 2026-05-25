@@ -1,5 +1,6 @@
 import { getAdminStudents } from "@/app/actions/verification";
 import { StudentsClient } from "./StudentsClient";
+import COPY from "@/lib/constants/copy";
 
 export default async function StudentsPage() {
   let students;
@@ -8,7 +9,7 @@ export default async function StudentsPage() {
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>Failed to load students.</p>
+        <p>{COPY.ADMIN.FAILED_TO_LOAD}</p>
       </div>
     );
   }

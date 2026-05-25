@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import COPY from "@/lib/constants/copy";
 import {
   Card,
   CardContent,
@@ -75,7 +76,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Camera className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">SnapGown</span>
+            <span className="text-xl font-bold">{COPY.BRAND.NAME}</span>
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
@@ -84,13 +85,13 @@ export default async function HomePage() {
                   {profile?.full_name || user.email}
                 </span>
                 <Link href={dashboardHref}>
-                  <Button>Dashboard</Button>
+                  <Button>{COPY.COMMON.DASHBOARD}</Button>
                 </Link>
                 {isAdmin && (
                   <Link href="/dashboard/admin">
                     <Button variant="secondary">
                       <Shield className="h-4 w-4 mr-1" />
-                      Admin
+                      {COPY.COMMON.ADMIN}
                     </Button>
                   </Link>
                 )}
@@ -100,10 +101,10 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/auth">
-                  <Button variant="outline">Login</Button>
+                  <Button variant="outline">{COPY.COMMON.LOGIN}</Button>
                 </Link>
                 <Link href="/auth?tab=register">
-                  <Button>Get Started</Button>
+                  <Button>{COPY.COMMON.GET_STARTED}</Button>
                 </Link>
                 <ThemeToggle />
               </>
@@ -117,17 +118,17 @@ export default async function HomePage() {
         <>
           <section className="max-w-7xl mx-auto px-4 py-16 text-center">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome back, {profile?.full_name}!
+              {COPY.HOME.WELCOME_BACK(profile?.full_name ?? "")}
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Manage your bookings and availability slots. Start accepting graduation photoshoot requests.
+              {COPY.HOME.PHOTOGRAPHER_SUBTITLE}
             </p>
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Camera className="h-4 w-4" /> {photographerSlots?.length || 0} Active Slots
+                <Camera className="h-4 w-4" /> {photographerSlots?.length || 0} {COPY.HOME.ACTIVE_SLOTS}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" /> {pendingOrders?.length || 0} Pending Orders
+                <Clock className="h-4 w-4" /> {pendingOrders?.length || 0} {COPY.HOME.PENDING_ORDERS}
               </span>
             </div>
           </section>
@@ -137,28 +138,28 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Manage Orders</CardTitle>
+                  <CardTitle>{COPY.HOME.MANAGE_ORDERS}</CardTitle>
                   <CardDescription>
-                    View and manage incoming booking requests from students.
+                    {COPY.HOME.MANAGE_ORDERS_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/dashboard/photographer/orders">
-                    <Button className="w-full">View Orders</Button>
+                    <Button className="w-full">{COPY.HOME.VIEW_ORDERS}</Button>
                   </Link>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Manage Availability</CardTitle>
+                  <CardTitle>{COPY.HOME.MANAGE_AVAILABILITY}</CardTitle>
                   <CardDescription>
-                    Set your available time slots for students to book.
+                    {COPY.HOME.MANAGE_AVAILABILITY_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/dashboard/photographer/slots">
-                    <Button className="w-full" variant="secondary">Manage Slots</Button>
+                    <Button className="w-full" variant="secondary">{COPY.HOME.MANAGE_AVAILABILITY}</Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -170,10 +171,10 @@ export default async function HomePage() {
           {/* Admin Hero */}
           <section className="max-w-7xl mx-auto px-4 py-16 text-center">
             <h1 className="text-4xl font-bold mb-4">
-              Admin Dashboard
+              {COPY.HOME.ADMIN_DASHBOARD}
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Manage photographers, orders, and platform settings.
+              {COPY.HOME.ADMIN_SUBTITLE}
             </p>
           </section>
 
@@ -182,42 +183,42 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Photographers</CardTitle>
+                  <CardTitle>{COPY.HOME.PHOTOGRAPHERS}</CardTitle>
                   <CardDescription>
-                    Review and approve photographer applications.
+                    {COPY.HOME.PHOTOGRAPHERS_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/dashboard/admin/photographers">
-                    <Button className="w-full">Manage Photographers</Button>
+                    <Button className="w-full">{COPY.HOME.MANAGE_PHOTOGRAPHERS}</Button>
                   </Link>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Orders</CardTitle>
+                  <CardTitle>{COPY.HOME.ORDERS}</CardTitle>
                   <CardDescription>
-                    View and manage all orders on the platform.
+                    {COPY.HOME.ORDERS_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/dashboard/admin/orders">
-                    <Button className="w-full" variant="secondary">View Orders</Button>
+                    <Button className="w-full" variant="secondary">{COPY.HOME.VIEW_ORDERS}</Button>
                   </Link>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle>Admin Panel</CardTitle>
+                  <CardTitle>{COPY.HOME.ADMIN_PANEL}</CardTitle>
                   <CardDescription>
-                    Access the full admin dashboard with analytics.
+                    {COPY.HOME.ADMIN_PANEL_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/dashboard/admin">
-                    <Button className="w-full" variant="outline">Open Admin Panel</Button>
+                    <Button className="w-full" variant="outline">{COPY.HOME.OPEN_ADMIN_PANEL}</Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -229,32 +230,31 @@ export default async function HomePage() {
           {/* Student/Guest Hero */}
           <section className="max-w-7xl mx-auto px-4 py-16 text-center">
             <h1 className="text-4xl font-bold mb-4">
-              Book Your Graduation Photoshoot
+              {COPY.HOME.HERO_TITLE}
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Find professional photographers at Durham University.
-              Choose a time slot, pay via WeChat, and get stunning graduation photos.
+              {COPY.HOME.HERO_SUBTITLE}
             </p>
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" /> Durham University
+                <MapPin className="h-4 w-4" /> {COPY.HOME.LOCATION}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" /> Instant Booking
+                <Clock className="h-4 w-4" /> {COPY.HOME.INSTANT_BOOKING}
               </span>
               <span className="flex items-center gap-1">
-                <GraduationCap className="h-4 w-4" /> WeChat Payment
+                <GraduationCap className="h-4 w-4" /> {COPY.HOME.WECHAT_PAYMENT}
               </span>
             </div>
           </section>
 
           {/* Photographers Grid */}
           <section className="max-w-7xl mx-auto px-4 pb-16">
-            <h2 className="text-2xl font-bold mb-6">Available Photographers</h2>
+            <h2 className="text-2xl font-bold mb-6">{COPY.HOME.AVAILABLE_PHOTOGRAPHERS}</h2>
             {!photographers || photographers.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Camera className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No photographers available yet. Check back soon!</p>
+                <p>{COPY.HOME.NO_PHOTOGRAPHERS}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -264,7 +264,7 @@ export default async function HomePage() {
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{p.full_name}</CardTitle>
-                          <Badge variant="secondary">Photographer</Badge>
+                          <Badge variant="secondary">{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
                         </div>
                         {p.bio && (
                           <CardDescription className="line-clamp-2">
@@ -284,7 +284,7 @@ export default async function HomePage() {
                             )}
                         </div>
                         <Button className="w-full mt-4" variant="secondary">
-                          View Slots & Book
+                          {COPY.HOME.VIEW_SLOTS_BOOK}
                         </Button>
                       </CardContent>
                     </Card>

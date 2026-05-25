@@ -27,6 +27,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 export default async function AdminOverviewPage() {
   let stats;
@@ -35,7 +36,7 @@ export default async function AdminOverviewPage() {
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>Failed to load admin stats. Are you logged in as admin?</p>
+        <p>{COPY.ADMIN.FAILED_TO_LOAD}</p>
       </div>
     );
   }
@@ -57,17 +58,17 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Platform Overview</h1>
+      <h1 className="text-2xl font-bold">{COPY.ADMIN.PLATFORM_OVERVIEW}</h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { title: "Pending Payment", value: stats.orderStats.PENDING_PAYMENT || 0, icon: Clock, color: "text-warning" },
-          { title: "Awaiting Verification", value: stats.orderStats.PROOF_SUBMITTED || 0, icon: ShoppingCart, color: "text-primary" },
-          { title: "Confirmed", value: stats.orderStats.CONFIRMED || 0, icon: CheckCircle, color: "text-primary" },
-          { title: "Overdue", value: stats.orderStats.VERIFICATION_OVERDUE || 0, icon: AlertTriangle, color: "text-destructive" },
-          { title: "Completed", value: stats.orderStats.COMPLETED || 0, icon: CheckCircle, color: "text-primary" },
-          { title: "Cancelled", value: stats.orderStats.CANCELLED || 0, icon: ShoppingCart, color: "text-muted-foreground" },
+          { title: COPY.ADMIN.PENDING_PAYMENT, value: stats.orderStats.PENDING_PAYMENT || 0, icon: Clock, color: "text-warning" },
+          { title: COPY.ADMIN.AWAITING_VERIFICATION, value: stats.orderStats.PROOF_SUBMITTED || 0, icon: ShoppingCart, color: "text-primary" },
+          { title: COPY.ADMIN.CONFIRMED, value: stats.orderStats.CONFIRMED || 0, icon: CheckCircle, color: "text-primary" },
+          { title: COPY.ADMIN.OVERDUE, value: stats.orderStats.VERIFICATION_OVERDUE || 0, icon: AlertTriangle, color: "text-destructive" },
+          { title: COPY.ADMIN.COMPLETED, value: stats.orderStats.COMPLETED || 0, icon: CheckCircle, color: "text-primary" },
+          { title: COPY.ADMIN.CANCELLED, value: stats.orderStats.CANCELLED || 0, icon: ShoppingCart, color: "text-muted-foreground" },
         ].map((card) => (
           <Card key={card.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -88,7 +89,7 @@ export default async function AdminOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Commission Owed
+              {COPY.ADMIN.COMMISSION_OWED}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -102,7 +103,7 @@ export default async function AdminOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending Approvals
+              {COPY.ADMIN.PENDING_APPROVALS}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -110,7 +111,7 @@ export default async function AdminOverviewPage() {
             <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
             <Link href="/dashboard/admin/photographers">
               <Button variant="link" size="sm" className="px-0 mt-1">
-                Review now <ArrowRight className="h-3 w-3 ml-1" />
+                {COPY.ADMIN.REVIEW_NOW} <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </Link>
           </CardContent>
@@ -119,7 +120,7 @@ export default async function AdminOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Students
+              {COPY.ADMIN.TOTAL_STUDENTS}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -131,7 +132,7 @@ export default async function AdminOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Photographers
+              {COPY.ADMIN.TOTAL_PHOTOGRAPHERS}
             </CardTitle>
             <Camera className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -146,24 +147,24 @@ export default async function AdminOverviewPage() {
         {/* Recent Orders */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>{COPY.ADMIN.RECENT_ORDERS}</CardTitle>
             <Link href="/dashboard/admin/orders">
               <Button variant="ghost" size="sm">
-                View all <ArrowRight className="h-3 w-3 ml-1" />
+                {COPY.COMMON.VIEW_ALL} <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </Link>
           </CardHeader>
           <CardContent>
             {stats.recentOrders.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No orders yet.</p>
+              <p className="text-muted-foreground text-sm">{COPY.ADMIN.NO_ORDERS_YET}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order</TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{COPY.COMMON.ORDER}</TableHead>
+                    <TableHead>{COPY.COMMON.STUDENT}</TableHead>
+                    <TableHead>{COPY.COMMON.AMOUNT}</TableHead>
+                    <TableHead>{COPY.COMMON.STATUS}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -196,25 +197,25 @@ export default async function AdminOverviewPage() {
         {/* Pending Photographers */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Pending Photographers</CardTitle>
+            <CardTitle>{COPY.ADMIN.PENDING_PHOTOGRAPHERS}</CardTitle>
             <Link href="/dashboard/admin/photographers">
               <Button variant="ghost" size="sm">
-                View all <ArrowRight className="h-3 w-3 ml-1" />
+                {COPY.COMMON.VIEW_ALL} <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </Link>
           </CardHeader>
           <CardContent>
             {stats.pendingPhotographers.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No pending approvals.
+                {COPY.ADMIN.NO_PENDING_APPROVALS}
               </p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>WeChat</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead>{COPY.COMMON.NAME}</TableHead>
+                    <TableHead>{COPY.COMMON.WECHAT}</TableHead>
+                    <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -228,7 +229,7 @@ export default async function AdminOverviewPage() {
                         <TableCell>
                           <Link href="/dashboard/admin/photographers">
                             <Button size="sm" variant="outline">
-                              Review
+                              {COPY.ADMIN.REVIEW}
                             </Button>
                           </Link>
                         </TableCell>

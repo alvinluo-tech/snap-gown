@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Camera, ArrowLeft, LayoutDashboard, ShoppingCart, Users, DollarSign, GraduationCap } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 export default async function AdminLayout({
   children,
@@ -39,37 +40,37 @@ export default async function AdminLayout({
               </Button>
             </Link>
             <Camera className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Admin Dashboard</span>
+            <span className="text-xl font-bold">{COPY.HOME.ADMIN_DASHBOARD}</span>
           </div>
           <nav className="flex items-center gap-2">
             <Link href="/dashboard/admin">
               <Button variant="ghost" size="sm">
                 <LayoutDashboard className="h-4 w-4 mr-1" />
-                Overview
+                {COPY.ADMIN.OVERVIEW}
               </Button>
             </Link>
             <Link href="/dashboard/admin/orders">
               <Button variant="ghost" size="sm">
                 <ShoppingCart className="h-4 w-4 mr-1" />
-                Orders
+                {COPY.ADMIN.ORDERS}
               </Button>
             </Link>
             <Link href="/dashboard/admin/photographers">
               <Button variant="ghost" size="sm">
                 <Users className="h-4 w-4 mr-1" />
-                Photographers
+                {COPY.ADMIN.PHOTOGRAPHERS}
               </Button>
             </Link>
             <Link href="/dashboard/admin/commission">
               <Button variant="ghost" size="sm">
                 <DollarSign className="h-4 w-4 mr-1" />
-                Commission
+                {COPY.ADMIN.COMMISSION}
               </Button>
             </Link>
             <Link href="/dashboard/admin/students">
               <Button variant="ghost" size="sm">
                 <GraduationCap className="h-4 w-4 mr-1" />
-                Students
+                {COPY.ADMIN.STUDENTS}
               </Button>
             </Link>
           </nav>

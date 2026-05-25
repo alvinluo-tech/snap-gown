@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Camera, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 export default async function StudentDashboard() {
   const supabase = await createSupabaseServer();
@@ -29,9 +30,9 @@ export default async function StudentDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Please log in to view your bookings.</p>
+        <p>{COPY.STUDENT.LOGIN_TO_VIEW}</p>
         <Link href="/auth">
-          <Button className="ml-3">Login</Button>
+          <Button className="ml-3">{COPY.COMMON.LOGIN}</Button>
         </Link>
       </div>
     );
@@ -70,14 +71,14 @@ export default async function StudentDashboard() {
             </Button>
           </Link>
           <Camera className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">My Bookings</span>
+          <span className="text-xl font-bold">{COPY.STUDENT.MY_BOOKINGS}</span>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Booking History</CardTitle>
+            <CardTitle>{COPY.STUDENT.BOOKING_HISTORY}</CardTitle>
           </CardHeader>
           <CardContent>
             {/* Waiting copy for proof submitted */}
@@ -86,7 +87,7 @@ export default async function StudentDashboard() {
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-primary mt-0.5" />
                   <p className="text-primary text-sm">
-                    您的付款凭证已成功提交。当前档期已为您安全锁定。摄影师正为您核对账单中（最长不超过12小时）。若超时未处理，平台官方客服将直接介入协助，请您放心。
+                    {COPY.STUDENT.PROOF_SUBMITTED_NOTICE}
                   </p>
                 </div>
               </div>
@@ -94,23 +95,23 @@ export default async function StudentDashboard() {
 
             {!orders || orders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p className="mb-4">No bookings yet.</p>
+                <p className="mb-4">{COPY.STUDENT.NO_BOOKINGS}</p>
                 <Link href="/">
-                  <Button>Browse Photographers</Button>
+                  <Button>{COPY.STUDENT.BROWSE_PHOTOGRAPHERS}</Button>
                 </Link>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order No</TableHead>
-                    <TableHead>Payment Ref</TableHead>
-                    <TableHead>Photographer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead>{COPY.STUDENT.ORDER_NO}</TableHead>
+                    <TableHead>{COPY.STUDENT.PAYMENT_REF}</TableHead>
+                    <TableHead>{COPY.STUDENT.PHOTOGRAPHER}</TableHead>
+                    <TableHead>{COPY.STUDENT.DATE}</TableHead>
+                    <TableHead>{COPY.STUDENT.TIME}</TableHead>
+                    <TableHead>{COPY.STUDENT.AMOUNT}</TableHead>
+                    <TableHead>{COPY.STUDENT.STATUS}</TableHead>
+                    <TableHead>{COPY.STUDENT.ACTION}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -155,7 +156,7 @@ export default async function StudentDashboard() {
                         <TableCell>
                           {order.status === "PENDING_PAYMENT" && (
                             <Link href={`/checkout/${order.id}`}>
-                              <Button size="sm">Pay Now</Button>
+                              <Button size="sm">{COPY.STUDENT.PAY_NOW}</Button>
                             </Link>
                           )}
                         </TableCell>

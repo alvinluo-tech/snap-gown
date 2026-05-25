@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Camera, Clock, ArrowLeft, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import COPY from "@/lib/constants/copy";
 
 interface CheckoutProps {
   order: {
@@ -60,10 +61,10 @@ export function CheckoutClient({
     setCancelling(true);
     try {
       await cancelBooking(order.id);
-      toast.success("Booking cancelled");
+      toast.success(COPY.CHECKOUT.BOOKING_CANCELLED);
       router.push("/");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Cancel failed");
+      toast.error(err instanceof Error ? err.message : COPY.CHECKOUT.CANCEL_FAILED);
     }
     setCancelling(false);
   };
@@ -82,17 +83,17 @@ export function CheckoutClient({
             </Button>
           </Link>
           <Camera className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">SnapGown</span>
+          <span className="text-xl font-bold">{COPY.BRAND.NAME}</span>
         </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Order Status */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Checkout</h1>
+          <h1 className="text-2xl font-bold mb-2">{COPY.CHECKOUT.TITLE}</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Order: {order.order_no}
+              {COPY.CHECKOUT.ORDER_NUMBER}：{order.order_no}
             </span>
             <Badge
               variant={
@@ -111,26 +112,26 @@ export function CheckoutClient({
         {/* Booking Details */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Booking Details</CardTitle>
+            <CardTitle className="text-lg">{COPY.CHECKOUT.BOOKING_DETAILS}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Photographer</span>
+              <span className="text-muted-foreground">{COPY.CHECKOUT.PHOTOGRAPHER_LABEL}</span>
               <span className="font-medium">{photographer.full_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Date</span>
+              <span className="text-muted-foreground">{COPY.COMMON.DATE}</span>
               <span className="font-medium">{slot.slot_date}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Time</span>
+              <span className="text-muted-foreground">{COPY.COMMON.TIME}</span>
               <span className="font-medium">
                 {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
               </span>
             </div>
             <Separator />
             <div className="flex justify-between text-lg font-bold">
-              <span>Total</span>
+              <span>{COPY.CHECKOUT.TOTAL}</span>
               <span>
                 £{amountGBP} (¥{amountRMB})
               </span>
@@ -145,10 +146,10 @@ export function CheckoutClient({
             <Card className="mb-6 border-destructive/20 bg-destructive/10">
               <CardContent className="p-4">
                 <p className="font-bold text-destructive text-lg mb-2">
-                  请扫描下方微信二维码支付共计 ¥{amountRMB} 元（折合 £{amountGBP}）
+                  {COPY.CHECKOUT.WECHAT_PAY_INSTRUCTION(amountRMB, amountGBP)}
                 </p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-destructive">【极重要警告】请务必在微信转账的【添加备注/说明】中填写此参考码：</span>
+                  <span className="text-destructive">{COPY.CHECKOUT.REF_CODE_WARNING}</span>
                 </div>
                 <div className="bg-background border-2 border-dashed border-destructive/30 rounded-lg p-3 text-center">
                   <span className="text-3xl font-mono font-bold text-destructive tracking-widest">
@@ -156,7 +157,7 @@ export function CheckoutClient({
                   </span>
                 </div>
                 <p className="text-sm text-destructive mt-2">
-                  否则摄影师将无法为您确认档期！
+                  {COPY.CHECKOUT.REF_CODE_CONSEQUENCE}
                 </p>
               </CardContent>
             </Card>
@@ -167,11 +168,10 @@ export function CheckoutClient({
                 <Clock className="h-5 w-5 text-warning" />
                 <div>
                   <p className="font-medium text-warning">
-                    30-Minute Payment Window
+                    {COPY.CHECKOUT.PAYMENT_WINDOW}
                   </p>
                   <p className="text-sm text-warning">
-                    Transfer ¥{amountRMB} via WeChat to the photographer, then
-                    upload your payment screenshot below.
+                    {COPY.CHECKOUT.PAYMENT_WINDOW_DESC(amountRMB)}
                   </p>
                 </div>
               </CardContent>
@@ -182,26 +182,25 @@ export function CheckoutClient({
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <QrCode className="h-5 w-5" />
-                  WeChat Payment
+                  {COPY.CHECKOUT.WECHAT_PAYMENT_TITLE}
                 </CardTitle>
                 <CardDescription>
-                  Scan the QR code below to pay ¥{amountRMB} to{" "}
-                  {photographer.full_name}
+                  {COPY.CHECKOUT.WECHAT_PAYMENT_SCAN(photographer.full_name)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center">
                 {photographer.wechat_qr_url ? (
                   <img
                     src={photographer.wechat_qr_url}
-                    alt="WeChat Payment QR"
+                    alt={COPY.CHECKOUT.WECHAT_PAYMENT_TITLE}
                     className="max-w-[250px] rounded-lg border"
                   />
                 ) : (
                   <div className="text-center p-8 border rounded-lg text-muted-foreground">
                     <QrCode className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Photographer has not uploaded a QR code yet.</p>
+                    <p>{COPY.CHECKOUT.QR_NOT_UPLOADED}</p>
                     <p className="text-sm">
-                      Contact via WeChat: {photographer.full_name}
+                      {COPY.CHECKOUT.CONTACT_VIA_WECHAT}{photographer.full_name}
                     </p>
                   </div>
                 )}
@@ -212,10 +211,10 @@ export function CheckoutClient({
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="text-lg">
-                  Upload Payment Proof
+                  {COPY.CHECKOUT.UPLOAD_PROOF}
                 </CardTitle>
                 <CardDescription>
-                  Upload a screenshot of your WeChat payment confirmation
+                  {COPY.CHECKOUT.PROOF_UPLOAD_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -230,7 +229,7 @@ export function CheckoutClient({
               onClick={handleCancel}
               disabled={cancelling}
             >
-              {cancelling ? "Cancelling..." : "Cancel Booking"}
+              {cancelling ? COPY.COMMON.CANCELLING : COPY.CHECKOUT.CANCEL_BOOKING}
             </Button>
           </>
         )}
@@ -240,16 +239,15 @@ export function CheckoutClient({
             <CardContent className="p-6 text-center">
               <Clock className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="text-lg font-bold text-primary mb-2">
-                Payment Proof Submitted
+                {COPY.CHECKOUT.PROOF_SUBMITTED}
               </h3>
               <p className="text-primary">
-                The photographer has 12 hours to verify your payment. You will
-                be notified once confirmed.
+                {COPY.CHECKOUT.PROOF_SUBMITTED_DESC}
               </p>
               {order.payment_proof_url && (
                 <img
                   src={order.payment_proof_url}
-                  alt="Submitted proof"
+                  alt={COPY.CHECKOUT.PROOF_PREVIEW_ALT}
                   className="max-w-[200px] mx-auto mt-4 rounded-lg border"
                 />
               )}
@@ -261,11 +259,10 @@ export function CheckoutClient({
           <Card className="border-primary/20 bg-primary/10">
             <CardContent className="p-6 text-center">
               <h3 className="text-lg font-bold text-primary mb-2">
-                Booking Confirmed!
+                {COPY.CHECKOUT.BOOKING_CONFIRMED}
               </h3>
               <p className="text-primary">
-                Your graduation photoshoot is confirmed. See you on{" "}
-                {slot.slot_date}!
+                {COPY.CHECKOUT.BOOKING_CONFIRMED_DESC(slot.slot_date)}
               </p>
             </CardContent>
           </Card>

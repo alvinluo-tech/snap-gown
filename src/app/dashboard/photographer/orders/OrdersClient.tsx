@@ -35,6 +35,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Eye, Clock } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 interface OrderWithRelations {
   id: string;
@@ -72,10 +73,10 @@ export function PhotographerOrdersClient({
     setLoading(true);
     try {
       await confirmPayment(orderId);
-      toast.success("Payment confirmed! Booking is now active.");
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.PAYMENT_CONFIRMED);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Confirm failed");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.CONFIRM_FAILED);
     }
     setLoading(false);
   };
@@ -84,10 +85,10 @@ export function PhotographerOrdersClient({
     setLoading(true);
     try {
       await completeOrder(orderId);
-      toast.success("Order marked as completed!");
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.ORDER_COMPLETED);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Complete failed");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.COMPLETE_FAILED);
     }
     setLoading(false);
   };
@@ -97,13 +98,13 @@ export function PhotographerOrdersClient({
     setLoading(true);
     try {
       await rejectPayment(selectedOrderId, rejectReason);
-      toast.success("Payment rejected. Student will be notified.");
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.PAYMENT_REJECTED);
       setRejectDialogOpen(false);
       setRejectReason("");
       setSelectedOrderId(null);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Reject failed");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.REJECT_FAILED);
     }
     setLoading(false);
   };
@@ -127,25 +128,25 @@ export function PhotographerOrdersClient({
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Order Management</CardTitle>
+          <CardTitle>{COPY.PHOTOGRAPHER_DASHBOARD.ORDER_MANAGEMENT}</CardTitle>
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No orders yet. Create time slots to start receiving bookings!</p>
+              <p>{COPY.PHOTOGRAPHER_DASHBOARD.NO_ORDERS}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Payment Ref</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Proof</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.ORDER}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.PAYMENT_REF}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.STUDENT}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.DATE}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.AMOUNT}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.STATUS}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.PROOF}</TableHead>
+                  <TableHead>{COPY.PHOTOGRAPHER_DASHBOARD.ACTIONS}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -165,7 +166,7 @@ export function PhotographerOrdersClient({
                           {order.profiles?.full_name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          WeChat: {order.profiles?.wechat_id}
+                          {COPY.PHOTOGRAPHER_DASHBOARD.WECHAT_LABEL}{order.profiles?.wechat_id}
                         </p>
                       </div>
                     </TableCell>
@@ -215,7 +216,7 @@ export function PhotographerOrdersClient({
                             disabled={loading}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
-                            Confirm
+                            {COPY.PHOTOGRAPHER_DASHBOARD.CONFIRM_PAYMENT}
                           </Button>
                           <Button
                             size="sm"
@@ -227,7 +228,7 @@ export function PhotographerOrdersClient({
                             disabled={loading}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
-                            Reject
+                            {COPY.PHOTOGRAPHER_DASHBOARD.REJECT_PAYMENT}
                           </Button>
                         </div>
                       )}
@@ -237,7 +238,7 @@ export function PhotographerOrdersClient({
                           onClick={() => handleComplete(order.id)}
                           disabled={loading}
                         >
-                          Mark Complete
+                          {COPY.PHOTOGRAPHER_DASHBOARD.MARK_COMPLETE}
                         </Button>
                       )}
                     </TableCell>
@@ -253,13 +254,13 @@ export function PhotographerOrdersClient({
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Payment</DialogTitle>
+            <DialogTitle>{COPY.PHOTOGRAPHER_DASHBOARD.REJECT_DIALOG_TITLE}</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting this payment proof.
+              {COPY.PHOTOGRAPHER_DASHBOARD.REJECT_DIALOG_DESC}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Reason for rejection..."
+            placeholder={COPY.PHOTOGRAPHER_DASHBOARD.REJECT_REASON_PLACEHOLDER}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
           />
@@ -268,14 +269,14 @@ export function PhotographerOrdersClient({
               variant="outline"
               onClick={() => setRejectDialogOpen(false)}
             >
-              Cancel
+              {COPY.COMMON.CANCEL}
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
               disabled={loading || !rejectReason.trim()}
             >
-              Reject Payment
+              {COPY.PHOTOGRAPHER_DASHBOARD.REJECT_AND_RELEASE}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -288,12 +289,12 @@ export function PhotographerOrdersClient({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Payment Proof</DialogTitle>
+            <DialogTitle>{COPY.PHOTOGRAPHER_DASHBOARD.VIEW_PROOF}</DialogTitle>
           </DialogHeader>
           {viewProofUrl && (
             <img
               src={viewProofUrl}
-              alt="Payment proof"
+              alt={COPY.COMPONENTS.PROOF_PREVIEW_ALT}
               className="w-full rounded-lg"
             />
           )}

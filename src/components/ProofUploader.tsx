@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import COPY from "@/lib/constants/copy";
 
 interface ProofUploaderProps {
   onUpload: (file: File) => Promise<void>;
@@ -25,7 +26,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         setFile(droppedFile);
         setPreview(URL.createObjectURL(droppedFile));
       } else {
-        toast.error("Please upload an image file");
+        toast.error(COPY.COMPONENTS.UPLOAD_IMAGE_ONLY);
       }
     },
     []
@@ -45,10 +46,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
     try {
       await onUpload(file);
       setUploaded(true);
-      toast.success("Payment proof uploaded successfully!");
+      toast.success(COPY.COMPONENTS.PROOF_UPLOADED);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Upload failed"
+        err instanceof Error ? err.message : COPY.COMPONENTS.PROOF_UPLOAD_FAILED
       );
     }
     setUploading(false);
@@ -66,7 +67,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         <CardContent className="flex items-center gap-3 p-4">
           <CheckCircle className="h-5 w-5 text-primary" />
           <span className="text-primary">
-            Payment proof uploaded. Waiting for photographer verification.
+            {COPY.COMPONENTS.PROOF_UPLOADED_WAITING}
           </span>
         </CardContent>
       </Card>
@@ -83,10 +84,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         >
           <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
           <p className="text-sm text-muted-foreground mb-2">
-            Drag & drop your WeChat payment screenshot here
+            {COPY.COMPONENTS.DRAG_DROP_HINT}
           </p>
           <p className="text-xs text-muted-foreground mb-3">
-            or click to select a file
+            {COPY.COMPONENTS.OR_CLICK_SELECT}
           </p>
           <label>
             <input
@@ -96,7 +97,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
               className="hidden"
             />
             <Button variant="outline" size="sm">
-              Select File
+              {COPY.COMPONENTS.SELECT_FILE}
             </Button>
           </label>
         </div>
@@ -105,7 +106,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
           {preview && (
             <img
               src={preview}
-              alt="Payment proof preview"
+              alt={COPY.COMPONENTS.PROOF_PREVIEW_ALT}
               className="max-h-64 mx-auto rounded-lg object-contain"
             />
           )}
@@ -126,7 +127,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
           disabled={uploading || disabled}
           className="w-full"
         >
-          {uploading ? "Uploading..." : "Submit Payment Proof"}
+          {uploading ? COPY.COMPONENTS.SUBMITTING_PROOF : COPY.COMPONENTS.SUBMIT_PROOF}
         </Button>
       )}
     </div>

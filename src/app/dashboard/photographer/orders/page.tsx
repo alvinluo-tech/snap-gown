@@ -4,6 +4,7 @@ import { PhotographerOrdersClient } from "./OrdersClient";
 import { Camera, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 export default async function PhotographerOrdersPage() {
   const supabase = await createSupabaseServer();
@@ -15,9 +16,9 @@ export default async function PhotographerOrdersPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Please log in to view your orders.</p>
+        <p>{COPY.PHOTOGRAPHER_DASHBOARD.LOGIN_TO_VIEW}</p>
         <Link href="/auth">
-          <Button className="ml-3">Login</Button>
+          <Button className="ml-3">{COPY.COMMON.LOGIN}</Button>
         </Link>
       </div>
     );
@@ -50,11 +51,11 @@ export default async function PhotographerOrdersPage() {
               </Button>
             </Link>
             <Camera className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Photographer Dashboard</span>
+            <span className="text-xl font-bold">{COPY.PHOTOGRAPHER_DASHBOARD.TITLE}</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/dashboard/photographer/slots">
-              <Button variant="outline">Manage Slots</Button>
+              <Button variant="outline">{COPY.PHOTOGRAPHER_DASHBOARD.MANAGE_SLOTS}</Button>
             </Link>
           </div>
         </div>
@@ -72,14 +73,14 @@ export default async function PhotographerOrdersPage() {
           >
             <p className="font-medium">
               {profile.account_status === "SUSPENDED"
-                ? "Account Suspended"
-                : "Outstanding Commission"}
+                ? COPY.PHOTOGRAPHER_DASHBOARD.ACCOUNT_SUSPENDED
+                : COPY.PHOTOGRAPHER_DASHBOARD.OUTSTANDING_COMMISSION}
               : £{penceToPounds(profile.commission_owed_pence ?? 0)}
             </p>
             <p className="text-sm mt-1">
               {profile.account_status === "SUSPENDED"
-                ? "Your account is suspended. Please contact admin to settle commission."
-                : "Please settle your commission with the platform."}
+                ? COPY.PHOTOGRAPHER_DASHBOARD.SUSPENDED_MESSAGE
+                : COPY.PHOTOGRAPHER_DASHBOARD.COMMISSION_MESSAGE}
             </p>
           </div>
         )}

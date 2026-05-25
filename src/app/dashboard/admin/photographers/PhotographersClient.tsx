@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Ban, Check, Clock, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import COPY from "@/lib/constants/copy";
 
 interface PhotographerProfile {
   id: string;
@@ -71,10 +72,10 @@ export function PhotographersClient({
     setLoading(true);
     try {
       await adminApprovePhotographer(photographerId, status);
-      toast.success(`Photographer ${status.toLowerCase()}`);
+      toast.success(status === "APPROVED" ? COPY.ADMIN.PHOTOGRAPHER_APPROVED : COPY.ADMIN.PHOTOGRAPHER_REJECTED);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
+      toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
     }
     setLoading(false);
   };
@@ -86,18 +87,18 @@ export function PhotographersClient({
     const suspend = currentStatus !== "SUSPENDED";
     setConfirmDialog({
       open: true,
-      title: suspend ? "Suspend Photographer?" : "Unsuspend Photographer?",
+      title: suspend ? COPY.ADMIN.SUSPEND_DIALOG_TITLE : COPY.ADMIN.UNSUSPEND_DIALOG_TITLE,
       description: suspend
-        ? "This will prevent the photographer from receiving new bookings."
-        : "This will restore the photographer's ability to receive bookings.",
+        ? COPY.ADMIN.SUSPEND_DIALOG_DESC
+        : COPY.ADMIN.UNSUSPEND_DIALOG_DESC,
       action: async () => {
         setLoading(true);
         try {
           await adminSuspendPhotographer(photographerId, suspend);
-          toast.success(`Account ${suspend ? "suspended" : "reactivated"}`);
+          toast.success(suspend ? COPY.ADMIN.ACCOUNT_SUSPENDED : COPY.ADMIN.ACCOUNT_REACTIVATED);
           router.refresh();
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Failed");
+          toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
         }
         setLoading(false);
         setConfirmDialog((prev) => ({ ...prev, open: false }));
@@ -108,17 +109,17 @@ export function PhotographersClient({
   const handleClearDebt = (photographerId: string) => {
     setConfirmDialog({
       open: true,
-      title: "Clear Debt?",
+      title: COPY.ADMIN.CLEAR_DEBT_DIALOG_TITLE,
       description:
-        "This will set the photographer's commission debt to £0.00 and reactivate their account.",
+        COPY.ADMIN.CLEAR_DEBT_DIALOG_DESC,
       action: async () => {
         setLoading(true);
         try {
           await adminClearDebt(photographerId);
-          toast.success("Debt cleared and account reactivated");
+          toast.success(COPY.ADMIN.DEBT_CLEARED);
           router.refresh();
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Failed");
+          toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
         }
         setLoading(false);
         setConfirmDialog((prev) => ({ ...prev, open: false }));
@@ -145,7 +146,7 @@ export function PhotographersClient({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name or WeChat..."
+          placeholder={COPY.ADMIN.SEARCH_PHOTOGRAPHERS}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -157,23 +158,23 @@ export function PhotographersClient({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
-            Pending Approval ({pendingPhotographers.length})
+            {COPY.ADMIN.PENDING_APPROVAL} ({pendingPhotographers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {pendingPhotographers.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No photographers pending approval.
+              {COPY.ADMIN.NO_PHOTOGRAPHERS_PENDING}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>WeChat</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Bio</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{COPY.COMMON.NAME}</TableHead>
+                  <TableHead>{COPY.COMMON.WECHAT}</TableHead>
+                  <TableHead>{COPY.COMMON.PHONE}</TableHead>
+                  <TableHead>简介</TableHead>
+                  <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -193,7 +194,7 @@ export function PhotographersClient({
                           disabled={loading}
                         >
                           <Check className="h-4 w-4 mr-1" />
-                          Approve
+                          {COPY.ADMIN.APPROVE}
                         </Button>
                         <Button
                           size="sm"
@@ -202,7 +203,7 @@ export function PhotographersClient({
                           disabled={loading}
                         >
                           <XCircle className="h-4 w-4 mr-1" />
-                          Reject
+                          {COPY.ADMIN.REJECT}
                         </Button>
                       </div>
                     </TableCell>
@@ -217,25 +218,25 @@ export function PhotographersClient({
       {/* All Photographers */}
       <Card>
         <CardHeader>
-          <CardTitle>All Photographers</CardTitle>
+          <CardTitle>{COPY.ADMIN.ALL_PHOTOGRAPHERS}</CardTitle>
         </CardHeader>
         <CardContent>
           {otherPhotographers.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               {search
-                ? "No photographers match your search."
-                : "No photographers registered yet."}
+                ? COPY.ADMIN.NO_PHOTOGRAPHERS_MATCH
+                : COPY.ADMIN.NO_PHOTOGRAPHERS_REGISTERED}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>WeChat</TableHead>
-                  <TableHead>Approval</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Debt</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{COPY.COMMON.NAME}</TableHead>
+                  <TableHead>{COPY.COMMON.WECHAT}</TableHead>
+                  <TableHead>{COPY.ADMIN.APPROVAL}</TableHead>
+                  <TableHead>{COPY.ADMIN.ACCOUNT}</TableHead>
+                  <TableHead>{COPY.ADMIN.DEBT}</TableHead>
+                  <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -281,12 +282,12 @@ export function PhotographersClient({
                           {p.account_status === "SUSPENDED" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-1" />
-                              Unsuspend
+                              {COPY.ADMIN.UNSUSPEND}
                             </>
                           ) : (
                             <>
                               <Ban className="h-4 w-4 mr-1" />
-                              Suspend
+                              {COPY.ADMIN.SUSPEND}
                             </>
                           )}
                         </Button>
@@ -297,7 +298,7 @@ export function PhotographersClient({
                             onClick={() => handleClearDebt(p.id)}
                             disabled={loading}
                           >
-                            Clear Debt
+                            {COPY.ADMIN.CLEAR_DEBT}
                           </Button>
                         )}
                       </div>
@@ -329,14 +330,14 @@ export function PhotographersClient({
                 setConfirmDialog((prev) => ({ ...prev, open: false }))
               }
             >
-              Cancel
+              {COPY.COMMON.CANCEL}
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDialog.action}
               disabled={loading}
             >
-              Confirm
+              {COPY.COMMON.CONFIRM}
             </Button>
           </DialogFooter>
         </DialogContent>

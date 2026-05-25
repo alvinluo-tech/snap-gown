@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Users } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 interface StudentProfile {
   id: string;
@@ -51,14 +52,14 @@ export function StudentsClient({ students }: { students: StudentProfile[] }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Students</h1>
+      <h1 className="text-2xl font-bold">{COPY.ADMIN.STUDENTS_TITLE}</h1>
 
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Students
+              {COPY.ADMIN.TOTAL_STUDENTS}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -69,7 +70,7 @@ export function StudentsClient({ students }: { students: StudentProfile[] }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Orders
+              {COPY.ADMIN.ORDERS_COUNT}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -79,7 +80,7 @@ export function StudentsClient({ students }: { students: StudentProfile[] }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
+              {COPY.ADMIN.TOTAL_REVENUE}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -94,7 +95,7 @@ export function StudentsClient({ students }: { students: StudentProfile[] }) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, WeChat, or phone..."
+          placeholder={COPY.ADMIN.SEARCH_STUDENTS}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -104,26 +105,26 @@ export function StudentsClient({ students }: { students: StudentProfile[] }) {
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Students ({filtered.length})</CardTitle>
+          <CardTitle>{COPY.ADMIN.STUDENTS_TITLE} ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               {search
-                ? "No students match your search."
-                : "No students registered yet."}
+                ? COPY.ADMIN.NO_STUDENTS_MATCH
+                : COPY.ADMIN.NO_STUDENTS_REGISTERED}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>WeChat</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Orders</TableHead>
-                    <TableHead>Total Spent</TableHead>
-                    <TableHead>Last Active</TableHead>
+                    <TableHead>{COPY.COMMON.NAME}</TableHead>
+                    <TableHead>{COPY.COMMON.WECHAT}</TableHead>
+                    <TableHead>{COPY.COMMON.PHONE}</TableHead>
+                    <TableHead>{COPY.ADMIN.ORDERS_COUNT}</TableHead>
+                    <TableHead>{COPY.ADMIN.TOTAL_SPENT}</TableHead>
+                    <TableHead>{COPY.ADMIN.LAST_ACTIVE}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

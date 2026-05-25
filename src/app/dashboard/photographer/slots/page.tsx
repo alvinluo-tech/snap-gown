@@ -3,6 +3,7 @@ import { PhotographerSlotsClient } from "./SlotsClient";
 import { Camera, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import COPY from "@/lib/constants/copy";
 
 export default async function PhotographerSlotsPage() {
   const supabase = await createSupabaseServer();
@@ -14,9 +15,9 @@ export default async function PhotographerSlotsPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Please log in to manage your slots.</p>
+        <p>{COPY.PHOTOGRAPHER_DASHBOARD.LOGIN_TO_VIEW_SLOTS}</p>
         <Link href="/auth">
-          <Button className="ml-3">Login</Button>
+          <Button className="ml-3">{COPY.COMMON.LOGIN}</Button>
         </Link>
       </div>
     );
@@ -42,7 +43,7 @@ export default async function PhotographerSlotsPage() {
             </Button>
           </Link>
           <Camera className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">Manage Time Slots</span>
+          <span className="text-xl font-bold">{COPY.PHOTOGRAPHER_DASHBOARD.MANAGE_SLOTS}</span>
         </div>
       </header>
 
