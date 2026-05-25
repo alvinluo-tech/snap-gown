@@ -62,10 +62,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
 
   if (uploaded) {
     return (
-      <Card className="border-green-200 bg-green-50">
+      <Card className="border-primary/20 bg-primary/10">
         <CardContent className="flex items-center gap-3 p-4">
-          <CheckCircle className="h-5 w-5 text-green-600" />
-          <span className="text-green-800">
+          <CheckCircle className="h-5 w-5 text-primary" />
+          <span className="text-primary">
             Payment proof uploaded. Waiting for photographer verification.
           </span>
         </CardContent>

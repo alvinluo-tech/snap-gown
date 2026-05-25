@@ -66,8 +66,8 @@ export default async function PhotographerOrdersPage() {
           <div
             className={`mb-6 p-4 rounded-lg border ${
               profile.account_status === "SUSPENDED"
-                ? "bg-red-50 border-red-200 text-red-800"
-                : "bg-yellow-50 border-yellow-200 text-yellow-800"
+                ? "bg-destructive/10 border-destructive/20 text-destructive"
+                : "bg-warning/10 border-warning/20 text-warning"
             }`}
           >
             <p className="font-medium">

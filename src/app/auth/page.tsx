@@ -133,8 +133,8 @@ function AuthContent() {
           full_name: regName,
           wechat_id: regWechat,
           uk_phone: regPhone || "",
-          role: regRole,
-          slug: regSlug || "",
+          role: regRole || undefined,
+          slug: regSlug || undefined,
         },
       },
     });
@@ -196,8 +196,8 @@ function AuthContent() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <Mail className="h-8 w-8 text-green-600" />
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Mail className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Check your email</h2>
@@ -249,8 +249,8 @@ function AuthContent() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Email sent</h2>

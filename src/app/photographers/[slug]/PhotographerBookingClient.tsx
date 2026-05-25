@@ -129,7 +129,7 @@ export function PhotographerBookingClient({
         {/* Booking Calendar */}
         <h2 className="text-xl font-bold mb-4">Available Time Slots</h2>
         {booking && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+          <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm">
             Reserving your slot... Please wait.
           </div>
         )}

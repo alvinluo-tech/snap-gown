@@ -142,34 +142,34 @@ export function CheckoutClient({
         {isPending && (
           <>
             {/* Payment Reference Code */}
-            <Card className="mb-6 border-red-200 bg-red-50">
+            <Card className="mb-6 border-destructive/20 bg-destructive/10">
               <CardContent className="p-4">
-                <p className="font-bold text-red-800 text-lg mb-2">
+                <p className="font-bold text-destructive text-lg mb-2">
                   请扫描下方微信二维码支付共计 ¥{amountRMB} 元（折合 £{amountGBP}）
                 </p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-red-700">【极重要警告】请务必在微信转账的【添加备注/说明】中填写此参考码：</span>
+                  <span className="text-destructive">【极重要警告】请务必在微信转账的【添加备注/说明】中填写此参考码：</span>
                 </div>
-                <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-3 text-center">
-                  <span className="text-3xl font-mono font-bold text-red-600 tracking-widest">
+                <div className="bg-background border-2 border-dashed border-destructive/30 rounded-lg p-3 text-center">
+                  <span className="text-3xl font-mono font-bold text-destructive tracking-widest">
                     {order.payment_ref}
                   </span>
                 </div>
-                <p className="text-sm text-red-600 mt-2">
+                <p className="text-sm text-destructive mt-2">
                   否则摄影师将无法为您确认档期！
                 </p>
               </CardContent>
             </Card>
 
             {/* Timer Warning */}
-            <Card className="mb-6 border-orange-200 bg-orange-50">
+            <Card className="mb-6 border-warning/20 bg-warning/10">
               <CardContent className="flex items-center gap-3 p-4">
-                <Clock className="h-5 w-5 text-orange-600" />
+                <Clock className="h-5 w-5 text-warning" />
                 <div>
-                  <p className="font-medium text-orange-800">
+                  <p className="font-medium text-warning">
                     30-Minute Payment Window
                   </p>
-                  <p className="text-sm text-orange-700">
+                  <p className="text-sm text-warning">
                     Transfer ¥{amountRMB} via WeChat to the photographer, then
                     upload your payment screenshot below.
                   </p>
@@ -236,13 +236,13 @@ export function CheckoutClient({
         )}
 
         {isProofSubmitted && (
-          <Card className="border-blue-200 bg-blue-50">
+          <Card className="border-primary/20 bg-primary/10">
             <CardContent className="p-6 text-center">
-              <Clock className="h-10 w-10 mx-auto mb-3 text-blue-600" />
-              <h3 className="text-lg font-bold text-blue-800 mb-2">
+              <Clock className="h-10 w-10 mx-auto mb-3 text-primary" />
+              <h3 className="text-lg font-bold text-primary mb-2">
                 Payment Proof Submitted
               </h3>
-              <p className="text-blue-700">
+              <p className="text-primary">
                 The photographer has 12 hours to verify your payment. You will
                 be notified once confirmed.
               </p>
@@ -258,12 +258,12 @@ export function CheckoutClient({
         )}
 
         {order.status === "CONFIRMED" && (
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-primary/20 bg-primary/10">
             <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-bold text-green-800 mb-2">
+              <h3 className="text-lg font-bold text-primary mb-2">
                 Booking Confirmed!
               </h3>
-              <p className="text-green-700">
+              <p className="text-primary">
                 Your graduation photoshoot is confirmed. See you on{" "}
                 {slot.slot_date}!
               </p>
