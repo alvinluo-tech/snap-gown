@@ -153,15 +153,19 @@ export function PhotographersClient({
       </div>
 
       {/* Pending Approvals */}
-      {pendingPhotographers.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-warning" />
-              Pending Approval ({pendingPhotographers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-warning" />
+            Pending Approval ({pendingPhotographers.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {pendingPhotographers.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No photographers pending approval.
+            </p>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -206,9 +210,9 @@ export function PhotographersClient({
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* All Photographers */}
       <Card>
