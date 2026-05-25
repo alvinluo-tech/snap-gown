@@ -8,7 +8,7 @@ export default async function AdminPhotographersPage() {
     .from("profiles")
     .select("id, full_name, wechat_id, uk_phone, bio, approval_status, account_status, commission_owed_pence, gowns_json")
     .eq("role", "PHOTOGRAPHER")
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 
   const mapped = (photographers || []).map((p) => ({
     id: p.id,
