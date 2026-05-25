@@ -39,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Eye, Search } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 interface AdminOrder {
   id: string;
@@ -81,10 +82,10 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
     setLoading(true);
     try {
       await adminConfirmOrder(orderId);
-      toast.success("Order confirmed by admin");
+      toast.success(COPY.ADMIN.ORDER_CONFIRMED);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
+      toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
     }
     setLoading(false);
   };
@@ -94,13 +95,13 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
     setLoading(true);
     try {
       await adminRejectOrder(selectedOrderId, rejectReason);
-      toast.success("Order rejected and slot released");
+      toast.success(COPY.ADMIN.ORDER_REJECTED);
       setRejectDialogOpen(false);
       setRejectReason("");
       setSelectedOrderId(null);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
+      toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
     }
     setLoading(false);
   };
@@ -152,21 +153,21 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
       </CardHeader>
       <CardContent>
         {orderList.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No orders.</p>
+          <p className="text-muted-foreground text-sm">{COPY.ADMIN.NO_ORDERS_YET}</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Payment Ref</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Photographer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Proof</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{COPY.COMMON.ORDER}</TableHead>
+                  <TableHead>{COPY.CHECKOUT.PAYMENT_REF}</TableHead>
+                  <TableHead>{COPY.COMMON.STUDENT}</TableHead>
+                  <TableHead>{COPY.COMMON.PHOTOGRAPHER}</TableHead>
+                  <TableHead>{COPY.COMMON.DATE}</TableHead>
+                  <TableHead>{COPY.COMMON.AMOUNT}</TableHead>
+                  <TableHead>{COPY.COMMON.STATUS}</TableHead>
+                  <TableHead>{COPY.COMMON.PROOF}</TableHead>
+                  <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -225,7 +226,7 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
                             disabled={loading}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
-                            Confirm
+                            {COPY.COMMON.CONFIRM}
                           </Button>
                           <Button
                             size="sm"
@@ -237,7 +238,7 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
                             disabled={loading}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
-                            Reject
+                            {COPY.ADMIN.REJECT}
                           </Button>
                         </div>
                       )}
@@ -259,7 +260,7 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by order no, payment ref, student, or photographer..."
+            placeholder={COPY.ADMIN.SEARCH_ORDERS}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -267,45 +268,45 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={COPY.ADMIN.FILTER_BY_STATUS} />
           </SelectTrigger>
           <SelectContent>
             {STATUS_OPTIONS.map((status) => (
               <SelectItem key={status} value={status}>
-                {status === "ALL" ? "All Statuses" : status.replace(/_/g, " ")}
+                {status === "ALL" ? COPY.ADMIN.ALL_STATUSES : status.replace(/_/g, " ")}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      {urgentOrders.length > 0 && renderOrderTable(urgentOrders, "Urgent (Needs Action)")}
-      {renderOrderTable(otherOrders, "All Orders")}
+      {urgentOrders.length > 0 && renderOrderTable(urgentOrders, COPY.ADMIN.URGENT_ORDERS)}
+      {renderOrderTable(otherOrders, COPY.ADMIN.ALL_ORDERS)}
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Order</DialogTitle>
+            <DialogTitle>{COPY.ADMIN.REJECT_ORDER}</DialogTitle>
             <DialogDescription>
-              This will cancel the order and release the slot. Provide a reason.
+              {COPY.ADMIN.REJECT_ORDER_DESC}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Reason for rejection..."
+            placeholder={COPY.ADMIN.REJECT_REASON_PLACEHOLDER}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-              Cancel
+              {COPY.COMMON.CANCEL}
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
               disabled={loading || !rejectReason.trim()}
             >
-              Reject & Release
+              {COPY.ADMIN.REJECT_AND_RELEASE}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -315,10 +316,10 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
       <Dialog open={!!viewProofUrl} onOpenChange={() => setViewProofUrl(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Payment Proof</DialogTitle>
+            <DialogTitle>{COPY.ADMIN.PAYMENT_PROOF}</DialogTitle>
           </DialogHeader>
           {viewProofUrl && (
-            <img src={viewProofUrl} alt="Payment proof" className="w-full rounded-lg" />
+            <img src={viewProofUrl} alt={COPY.COMPONENTS.PROOF_PREVIEW_ALT} className="w-full rounded-lg" />
           )}
         </DialogContent>
       </Dialog>

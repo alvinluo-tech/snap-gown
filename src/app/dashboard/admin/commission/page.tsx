@@ -1,5 +1,6 @@
 import { getAdminCommissionLedger } from "@/app/actions/verification";
 import { CommissionClient } from "./CommissionClient";
+import COPY from "@/lib/constants/copy";
 
 export default async function CommissionPage() {
   let ledger;
@@ -8,7 +9,7 @@ export default async function CommissionPage() {
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>Failed to load commission ledger.</p>
+        <p>{COPY.ADMIN.FAILED_TO_LOAD}</p>
       </div>
     );
   }

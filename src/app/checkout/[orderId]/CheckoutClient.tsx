@@ -61,10 +61,10 @@ export function CheckoutClient({
     setCancelling(true);
     try {
       await cancelBooking(order.id);
-      toast.success("Booking cancelled");
+      toast.success(COPY.CHECKOUT.BOOKING_CANCELLED);
       router.push("/");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Cancel failed");
+      toast.error(err instanceof Error ? err.message : COPY.CHECKOUT.CANCEL_FAILED);
     }
     setCancelling(false);
   };
@@ -83,17 +83,17 @@ export function CheckoutClient({
             </Button>
           </Link>
           <Camera className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">SnapGown</span>
+          <span className="text-xl font-bold">{COPY.BRAND.NAME}</span>
         </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Order Status */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Checkout</h1>
+          <h1 className="text-2xl font-bold mb-2">{COPY.CHECKOUT.TITLE}</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Order: {order.order_no}
+              {COPY.CHECKOUT.ORDER_NUMBER}：{order.order_no}
             </span>
             <Badge
               variant={
@@ -112,26 +112,26 @@ export function CheckoutClient({
         {/* Booking Details */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Booking Details</CardTitle>
+            <CardTitle className="text-lg">{COPY.CHECKOUT.BOOKING_DETAILS}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Photographer</span>
+              <span className="text-muted-foreground">{COPY.CHECKOUT.PHOTOGRAPHER_LABEL}</span>
               <span className="font-medium">{photographer.full_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Date</span>
+              <span className="text-muted-foreground">{COPY.COMMON.DATE}</span>
               <span className="font-medium">{slot.slot_date}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Time</span>
+              <span className="text-muted-foreground">{COPY.COMMON.TIME}</span>
               <span className="font-medium">
                 {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
               </span>
             </div>
             <Separator />
             <div className="flex justify-between text-lg font-bold">
-              <span>Total</span>
+              <span>{COPY.CHECKOUT.TOTAL}</span>
               <span>
                 £{amountGBP} (¥{amountRMB})
               </span>
@@ -182,26 +182,25 @@ export function CheckoutClient({
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <QrCode className="h-5 w-5" />
-                  WeChat Payment
+                  {COPY.CHECKOUT.WECHAT_PAYMENT_TITLE}
                 </CardTitle>
                 <CardDescription>
-                  Scan the QR code below to pay ¥{amountRMB} to{" "}
-                  {photographer.full_name}
+                  {COPY.CHECKOUT.WECHAT_PAYMENT_SCAN(photographer.full_name)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center">
                 {photographer.wechat_qr_url ? (
                   <img
                     src={photographer.wechat_qr_url}
-                    alt="WeChat Payment QR"
+                    alt={COPY.CHECKOUT.WECHAT_PAYMENT_TITLE}
                     className="max-w-[250px] rounded-lg border"
                   />
                 ) : (
                   <div className="text-center p-8 border rounded-lg text-muted-foreground">
                     <QrCode className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Photographer has not uploaded a QR code yet.</p>
+                    <p>{COPY.CHECKOUT.QR_NOT_UPLOADED}</p>
                     <p className="text-sm">
-                      Contact via WeChat: {photographer.full_name}
+                      {COPY.CHECKOUT.CONTACT_VIA_WECHAT}{photographer.full_name}
                     </p>
                   </div>
                 )}
@@ -215,7 +214,7 @@ export function CheckoutClient({
                   {COPY.CHECKOUT.UPLOAD_PROOF}
                 </CardTitle>
                 <CardDescription>
-                  {COPY.CHECKOUT.PROOF_SUBMITTED_DESC}
+                  {COPY.CHECKOUT.PROOF_UPLOAD_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -230,7 +229,7 @@ export function CheckoutClient({
               onClick={handleCancel}
               disabled={cancelling}
             >
-              {cancelling ? "Cancelling..." : "Cancel Booking"}
+              {cancelling ? COPY.COMMON.CANCELLING : COPY.CHECKOUT.CANCEL_BOOKING}
             </Button>
           </>
         )}
@@ -248,7 +247,7 @@ export function CheckoutClient({
               {order.payment_proof_url && (
                 <img
                   src={order.payment_proof_url}
-                  alt="Submitted proof"
+                  alt={COPY.CHECKOUT.PROOF_PREVIEW_ALT}
                   className="max-w-[200px] mx-auto mt-4 rounded-lg border"
                 />
               )}

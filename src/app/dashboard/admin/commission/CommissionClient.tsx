@@ -74,17 +74,17 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
   const handleSettle = (ledgerId: string) => {
     setConfirmDialog({
       open: true,
-      title: "Mark as Settled?",
+      title: COPY.ADMIN.SETTLE_DIALOG_TITLE,
       description:
-        "This will mark the commission as paid. This action should only be done after verifying payment.",
+        COPY.ADMIN.SETTLE_DIALOG_DESC,
       action: async () => {
         setLoading(true);
         try {
           await adminSettleCommission(ledgerId);
-          toast.success("Commission marked as settled");
+          toast.success(COPY.ADMIN.COMMISSION_SETTLED);
           router.refresh();
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Failed");
+          toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
         }
         setLoading(false);
         setConfirmDialog((prev) => ({ ...prev, open: false }));
@@ -95,17 +95,17 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
   const handleWaive = (ledgerId: string) => {
     setConfirmDialog({
       open: true,
-      title: "Waive Commission?",
+      title: COPY.ADMIN.WAIVE_DIALOG_TITLE,
       description:
         COPY.ADMIN.WAIVE_DIALOG_DESC,
       action: async () => {
         setLoading(true);
         try {
           await adminWaiveCommission(ledgerId);
-          toast.success("Commission waived");
+          toast.success(COPY.ADMIN.COMMISSION_WAIVED);
           router.refresh();
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Failed");
+          toast.error(err instanceof Error ? err.message : COPY.COMMON.FAILED);
         }
         setLoading(false);
         setConfirmDialog((prev) => ({ ...prev, open: false }));
@@ -150,14 +150,14 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Commission Ledger</h1>
+      <h1 className="text-2xl font-bold">{COPY.ADMIN.COMMISSION_LEDGER}</h1>
 
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending
+              {COPY.ADMIN.PENDING}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -170,7 +170,7 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Settled
+              {COPY.ADMIN.SETTLED}
             </CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -183,7 +183,7 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Entries
+              {COPY.ADMIN.TOTAL_ENTRIES}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -197,7 +197,7 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by photographer or order no..."
+            placeholder={COPY.ADMIN.SEARCH_COMMISSION}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -205,12 +205,12 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={COPY.ADMIN.FILTER_BY_STATUS} />
           </SelectTrigger>
           <SelectContent>
             {STATUS_OPTIONS.map((status) => (
               <SelectItem key={status} value={status}>
-                {status === "ALL" ? "All Statuses" : status}
+                {status === "ALL" ? COPY.ADMIN.ALL_STATUSES : status}
               </SelectItem>
             ))}
           </SelectContent>
@@ -220,27 +220,27 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Commission Entries ({filtered.length})</CardTitle>
+          <CardTitle>{COPY.ADMIN.COMMISSION_ENTRIES(filtered.length)}</CardTitle>
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               {search || statusFilter !== "ALL"
-                ? "No entries match your filters."
-                : "No commission entries yet."}
+                ? COPY.ADMIN.NO_ENTRIES_MATCH
+                : COPY.ADMIN.NO_ENTRIES_YET}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order</TableHead>
-                    <TableHead>Photographer</TableHead>
-                    <TableHead>Order Amount</TableHead>
-                    <TableHead>Commission</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{COPY.COMMON.ORDER}</TableHead>
+                    <TableHead>{COPY.COMMON.PHOTOGRAPHER}</TableHead>
+                    <TableHead>{COPY.ADMIN.ORDER_AMOUNT}</TableHead>
+                    <TableHead>{COPY.ADMIN.COMMISSION_AMOUNT}</TableHead>
+                    <TableHead>{COPY.COMMON.STATUS}</TableHead>
+                    <TableHead>{COPY.COMMON.DATE}</TableHead>
+                    <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -277,7 +277,7 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
                               disabled={loading}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
-                              Settle
+                              {COPY.ADMIN.SETTLE}
                             </Button>
                             <Button
                               size="sm"
@@ -286,13 +286,13 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
                               disabled={loading}
                             >
                               <XCircle className="h-4 w-4 mr-1" />
-                              Waive
+                              {COPY.ADMIN.WAIVE}
                             </Button>
                           </div>
                         )}
                         {entry.ledger_status === "SETTLED" && entry.settled_at && (
                           <span className="text-xs text-muted-foreground">
-                            Settled{" "}
+                            {COPY.ADMIN.SETTLED_ON}{" "}
                             {new Date(entry.settled_at).toLocaleDateString()}
                           </span>
                         )}
@@ -325,10 +325,10 @@ export function CommissionClient({ ledger }: { ledger: CommissionEntry[] }) {
                 setConfirmDialog((prev) => ({ ...prev, open: false }))
               }
             >
-              Cancel
+              {COPY.COMMON.CANCEL}
             </Button>
             <Button onClick={confirmDialog.action} disabled={loading}>
-              Confirm
+              {COPY.COMMON.CONFIRM}
             </Button>
           </DialogFooter>
         </DialogContent>

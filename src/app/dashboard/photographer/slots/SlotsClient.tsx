@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Calendar } from "lucide-react";
+import COPY from "@/lib/constants/copy";
 
 interface Slot {
   id: string;
@@ -51,13 +52,13 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
       fd.append("start_time", startTime);
       fd.append("end_time", endTime);
       await createSlot(fd);
-      toast.success("Slot created!");
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.SLOT_CREATED);
       setSlotDate("");
       setStartTime("");
       setEndTime("");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create slot");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.SLOT_CREATE_FAILED);
     }
     setLoading(false);
   };
@@ -72,10 +73,10 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
       fd.append("start_time", batchStartTime);
       fd.append("end_time", batchEndTime);
       const result = await batchCreateSlots(fd);
-      toast.success(`${result.length} slots created!`);
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.SLOTS_BATCH_CREATED(result.length));
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Batch creation failed");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.BATCH_CREATE_FAILED);
     }
     setLoading(false);
   };
@@ -83,10 +84,10 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
   const handleDelete = async (slotId: string) => {
     try {
       await deleteSlot(slotId);
-      toast.success("Slot deleted");
+      toast.success(COPY.PHOTOGRAPHER_DASHBOARD.SLOT_DELETED);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : COPY.PHOTOGRAPHER_DASHBOARD.SLOT_DELETE_FAILED);
     }
   };
 
@@ -96,24 +97,24 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" /> Create Time Slots
+            <Plus className="h-5 w-5" /> {COPY.PHOTOGRAPHER_DASHBOARD.CREATE_SLOTS_TITLE}
           </CardTitle>
           <CardDescription>
-            Add available time slots for students to book
+            {COPY.PHOTOGRAPHER_DASHBOARD.CREATE_SLOTS_DESC}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="single">
             <TabsList>
-              <TabsTrigger value="single">Single Slot</TabsTrigger>
-              <TabsTrigger value="batch">Batch Create</TabsTrigger>
+              <TabsTrigger value="single">{COPY.PHOTOGRAPHER_DASHBOARD.SINGLE_SLOT}</TabsTrigger>
+              <TabsTrigger value="batch">{COPY.PHOTOGRAPHER_DASHBOARD.BATCH_CREATE}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="single">
               <form onSubmit={handleCreateSingle} className="space-y-4 mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Date</Label>
+                    <Label>{COPY.COMMON.DATE}</Label>
                     <Input
                       type="date"
                       value={slotDate}
@@ -122,7 +123,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Start Time</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.START_TIME}</Label>
                     <Input
                       type="time"
                       value={startTime}
@@ -131,7 +132,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Time</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.END_TIME}</Label>
                     <Input
                       type="time"
                       value={endTime}
@@ -141,7 +142,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                   </div>
                 </div>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Creating..." : "Create Slot"}
+                  {loading ? COPY.COMMON.CREATING : COPY.PHOTOGRAPHER_DASHBOARD.CREATE_SLOT}
                 </Button>
               </form>
             </TabsContent>
@@ -150,7 +151,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
               <form onSubmit={handleBatchCreate} className="space-y-4 mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Start Date</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.START_DATE}</Label>
                     <Input
                       type="date"
                       value={batchStart}
@@ -159,7 +160,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Date</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.END_DATE}</Label>
                     <Input
                       type="date"
                       value={batchEnd}
@@ -168,7 +169,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Start Time</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.START_TIME}</Label>
                     <Input
                       type="time"
                       value={batchStartTime}
@@ -177,7 +178,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Time</Label>
+                    <Label>{COPY.PHOTOGRAPHER_DASHBOARD.END_TIME}</Label>
                     <Input
                       type="time"
                       value={batchEndTime}
@@ -187,7 +188,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
                   </div>
                 </div>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Creating..." : "Batch Create Slots"}
+                  {loading ? COPY.COMMON.CREATING : COPY.PHOTOGRAPHER_DASHBOARD.BATCH_CREATE_SLOTS}
                 </Button>
               </form>
             </TabsContent>
@@ -199,7 +200,7 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Your Slots
+            <Calendar className="h-5 w-5" /> {COPY.PHOTOGRAPHER_DASHBOARD.YOUR_SLOTS}
           </CardTitle>
         </CardHeader>
         <CardContent>

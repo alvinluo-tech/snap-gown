@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
+import COPY from "@/lib/constants/copy";
 
 interface Slot {
   id: string;
@@ -77,13 +78,13 @@ export function CalendarScheduler({
             <CardTitle className="text-lg">
               {selectedDate
                 ? format(selectedDate, "EEEE, MMMM d, yyyy")
-                : "Select a date"}
+                : COPY.COMPONENTS.SELECT_DATE}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {slotsForDate.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No slots available for this date.
+                {COPY.COMPONENTS.NO_SLOTS_DATE}
               </p>
             ) : (
               <div className="space-y-3">
@@ -116,7 +117,7 @@ export function CalendarScheduler({
                     </div>
                     {mode === "student" && slot.status === "AVAILABLE" && onBookSlot && (
                       <Button size="sm" onClick={() => onBookSlot(slot)}>
-                        Book Now
+                        {COPY.COMPONENTS.BOOK_NOW}
                       </Button>
                     )}
                     {mode === "photographer" &&
@@ -127,7 +128,7 @@ export function CalendarScheduler({
                           variant="destructive"
                           onClick={() => onDeleteSlot(slot.id)}
                         >
-                          Delete
+                          {COPY.COMPONENTS.DELETE_SLOT}
                         </Button>
                       )}
                   </div>

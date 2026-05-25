@@ -1,5 +1,6 @@
 import { getAdminOrders } from "@/app/actions/verification";
 import { AdminOrdersClient } from "./AdminOrdersClient";
+import COPY from "@/lib/constants/copy";
 
 export default async function AdminOrdersPage() {
   let orders;
@@ -8,7 +9,7 @@ export default async function AdminOrdersPage() {
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>Failed to load orders.</p>
+        <p>{COPY.ADMIN.FAILED_TO_LOAD}</p>
       </div>
     );
   }

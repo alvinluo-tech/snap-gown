@@ -12,6 +12,8 @@ export const COPY = {
     NAME: "SnapGown",
     TAGLINE: "预约你的毕业照拍摄",
     DESCRIPTION: "在杜伦大学找到专业摄影师。选择时间段，通过微信支付，获得精美的毕业照。",
+    META_TITLE: "SnapGown - 英国毕业照拍摄预约",
+    META_DESC: "在英国大学预约专业毕业照拍摄服务",
   },
 
   COMMON: {
@@ -42,6 +44,12 @@ export const COPY = {
     WECHAT: "微信",
     PHOTOGRAPHER: "摄影师",
     STUDENT: "学生",
+    ORDER: "订单",
+    PROOF: "凭证",
+    FAILED: "操作失败",
+    CREATING: "创建中...",
+    UPDATING: "更新中...",
+    CANCELLING: "取消中...",
   },
 
   // ============================================================
@@ -56,7 +64,7 @@ export const COPY = {
     AVAILABLE_PHOTOGRAPHERS: "可用摄影师",
     NO_PHOTOGRAPHERS: "暂无可用摄影师，请稍后再来！",
     VIEW_SLOTS_BOOK: "查看档期 & 预约",
-    WELCOME_BACK: "欢迎回来，{name}！",
+    WELCOME_BACK: (name: string) => `欢迎回来，${name}！`,
     PHOTOGRAPHER_SUBTITLE: "管理你的预约和可用档期，开始接受毕业照拍摄请求。",
     ACTIVE_SLOTS: "个可用档期",
     PENDING_ORDERS: "个待处理订单",
@@ -75,12 +83,14 @@ export const COPY = {
     ADMIN_PANEL: "管理面板",
     ADMIN_PANEL_DESC: "访问完整的管理后台和数据分析。",
     OPEN_ADMIN_PANEL: "打开管理面板",
+    PHOTOGRAPHER_BADGE: "摄影师",
   },
 
   // ============================================================
   // 支付 & 结算
   // ============================================================
   CHECKOUT: {
+    TITLE: "结算",
     PAYMENT_TITLE: "支付",
     WECHAT_PAY_INSTRUCTION: (rmb: string, gbp: string) =>
       `请扫描下方微信二维码支付共计 ¥${rmb} 元（折合 £${gbp}）`,
@@ -99,6 +109,19 @@ export const COPY = {
     PAYMENT_REF: "支付参考码",
     PHOTOGRAPHER_LABEL: "摄影师",
     TOTAL: "总计",
+    BOOKING_DETAILS: "预约详情",
+    CANCEL_BOOKING: "取消预约",
+    BOOKING_CANCELLED: "预约已取消",
+    CANCEL_FAILED: "取消失败",
+    WECHAT_PAYMENT_TITLE: "微信支付",
+    WECHAT_PAYMENT_SCAN: (name: string) => `扫描下方二维码向 ${name} 付款`,
+    QR_NOT_UPLOADED: "摄影师尚未上传收款二维码。",
+    CONTACT_VIA_WECHAT: "微信联系：",
+    PROOF_UPLOAD_TITLE: "上传付款凭证",
+    PROOF_UPLOAD_DESC: "上传微信支付截图作为付款凭证",
+    PROOF_PREVIEW_ALT: "付款凭证预览",
+    SUBMITTING: "提交中...",
+    SUBMIT_PROOF: "提交付款凭证",
   },
 
   // ============================================================
@@ -120,6 +143,7 @@ export const COPY = {
     AMOUNT: "金额",
     STATUS: "状态",
     ACTION: "操作",
+    PAY_NOW: "立即支付",
   },
 
   // ============================================================
@@ -148,10 +172,36 @@ export const COPY = {
     SUSPENDED_MESSAGE: "你的账户已被暂停。请联系管理员结算佣金。",
     COMMISSION_MESSAGE: "请与平台结算佣金。",
     LOGIN_TO_VIEW: "请登录查看你的订单。",
+    LOGIN_TO_VIEW_SLOTS: "请登录查看你的档期。",
     REJECT_DIALOG_TITLE: "拒绝付款",
     REJECT_DIALOG_DESC: "请提供拒绝付款凭证的原因。",
     REJECT_REASON_PLACEHOLDER: "拒绝原因...",
     REJECT_AND_RELEASE: "拒绝并释放",
+    PAYMENT_CONFIRMED: "付款已确认！预约现已生效。",
+    CONFIRM_FAILED: "确认失败",
+    ORDER_COMPLETED: "订单已标记为完成！",
+    COMPLETE_FAILED: "完成失败",
+    PAYMENT_REJECTED: "付款已拒绝。学生将收到通知。",
+    REJECT_FAILED: "拒绝失败",
+    WECHAT_LABEL: "微信：",
+    // 档期管理
+    CREATE_SLOTS_TITLE: "创建时间段",
+    CREATE_SLOTS_DESC: "添加可用时间段供学生预约",
+    SINGLE_SLOT: "单个创建",
+    BATCH_CREATE: "批量创建",
+    START_TIME: "开始时间",
+    END_TIME: "结束时间",
+    START_DATE: "开始日期",
+    END_DATE: "结束日期",
+    CREATE_SLOT: "创建时间段",
+    BATCH_CREATE_SLOTS: "批量创建时间段",
+    YOUR_SLOTS: "你的时间段",
+    SLOT_CREATED: "时间段已创建！",
+    SLOT_CREATE_FAILED: "创建时间段失败",
+    SLOTS_BATCH_CREATED: (count: number) => `已创建 ${count} 个时间段！`,
+    BATCH_CREATE_FAILED: "批量创建失败",
+    SLOT_DELETED: "时间段已删除",
+    SLOT_DELETE_FAILED: "删除失败",
   },
 
   // ============================================================
@@ -247,6 +297,7 @@ export const COPY = {
     TOTAL_SPENT: "总消费",
     LAST_ACTIVE: "最后活跃",
     TOTAL_REVENUE: "总收入",
+    COMMISSION_ENTRIES: (count: number) => `佣金条目 (${count})`,
   },
 
   // ============================================================
@@ -258,6 +309,10 @@ export const COPY = {
     VIEW_SLOTS: "查看档期 & 预约",
     BOOK_NOW: "立即预约",
     CONTACT_WECHAT: "微信联系",
+    SLOT_RESERVED: "档期已锁定！请在 30 分钟内完成支付。",
+    BOOKING_FAILED: "预约失败",
+    PRICE_LABEL: "价格：",
+    PAYMENT_VIA_WECHAT: "通过微信支付",
   },
 
   // ============================================================
@@ -271,19 +326,24 @@ export const COPY = {
     CONFIRM_PASSWORD: "确认密码",
     FORGOT_PASSWORD: "忘记密码？",
     RESET_PASSWORD: "重置密码",
+    RESET_PASSWORD_TITLE: "重置密码",
+    RESET_PASSWORD_DESC: "输入你注册时使用的邮箱，我们将发送重置链接。",
     SEND_RESET_LINK: "发送重置链接",
+    SENDING: "发送中...",
     CHECK_EMAIL: "查看邮箱",
-    CHECK_EMAIL_DESC: "我们已向 {email} 发送了验证链接。",
+    CHECK_EMAIL_DESC: (email: string) => `我们已向 ${email} 发送了验证链接。`,
     NEXT_STEPS: "后续步骤：",
     STEP_1: "打开你的邮箱",
     STEP_2: "点击验证链接",
     STEP_3: "返回此处登录",
     EMAIL_SENT: "邮件已发送",
-    EMAIL_SENT_DESC: "如果存在 {email} 的账户，你将很快收到密码重置链接。",
+    EMAIL_SENT_DESC: (email: string) =>
+      `如果存在 ${email} 的账户，你将很快收到密码重置链接。`,
     PASSWORD_UPDATED: "密码已更新",
     PASSWORD_UPDATED_DESC: "你的密码已成功更改。",
-    REDIRECTING: "将在 {countdown} 秒后跳转到登录...",
+    REDIRECTING: (countdown: number) => `将在 ${countdown} 秒后跳转到登录...`,
     GO_TO_LOGIN: "立即跳转登录",
+    BACK_TO_LOGIN: "返回登录",
     PASSWORD_STRENGTH: {
       WEAK: "弱",
       FAIR: "一般",
@@ -294,12 +354,44 @@ export const COPY = {
     ROLE_PHOTOGRAPHER: "摄影师",
     STEP_1_TITLE: "选择角色",
     STEP_2_TITLE: "完善信息",
+    I_AM_A: "我是",
+    FULL_NAME: "姓名",
+    FULL_NAME_PLACEHOLDER: "张三",
+    EMAIL_PLACEHOLDER: "your@email.com",
+    PASSWORD_PLACEHOLDER: "至少 6 位密码",
     CUSTOM_PROFILE_URL: "自定义主页链接",
+    CUSTOM_PROFILE_URL_PLACEHOLDER: "alvin",
     CUSTOM_PROFILE_URL_HINT: "例如 alvin，你的主页将是 /photographers/alvin",
     ALREADY_REGISTERED: "此邮箱已注册。请直接登录。",
     REGISTRATION_SUCCESS: "注册成功！",
     REGISTRATION_SUCCESS_DESC: "请查看邮箱完成验证。",
     RESEND_EMAIL: "重发邮件",
+    LOGIN_SUCCESS: "登录成功",
+    PASSWORDS_NOT_MATCH: "两次输入的密码不一致",
+    PASSWORD_MIN_LENGTH: "密码至少需要 6 个字符",
+    SIGNING_IN: "登录中...",
+    SIGN_IN: "登录",
+    CREATING_ACCOUNT: "创建中...",
+    CREATE_ACCOUNT: "创建账号",
+    ACCOUNT_STEP: "账号",
+    DETAILS_STEP: "详情",
+    WECHAT_ID: "微信 ID",
+    WECHAT_ID_PLACEHOLDER: "your_wechat_id",
+    WECHAT_ID_HINT_ROLE: (role: string) =>
+      `用于与${role}进行支付沟通`,
+    UK_PHONE: "英国手机号（选填）",
+    UK_PHONE_PLACEHOLDER: "+44 7xxx xxx xxx",
+    RE_ENTER_PASSWORD: "再次输入密码",
+    PASSWORDS_MATCH: "密码一致",
+    REVIEW_INFO: "确认信息",
+    VERIFICATION_EMAIL_RESENT: "验证邮件已重发！",
+    DIDNT_RECEIVE_EMAIL: "没收到邮件？请检查垃圾邮件文件夹或",
+    EMAIL_PLACEHOLDER2: "you@example.com",
+    SET_NEW_PASSWORD: "设置新密码",
+    NEW_PASSWORD: "新密码",
+    UPDATING: "更新中...",
+    UPDATE_PASSWORD: "更新密码",
+    ENTER_EMAIL_FOR_RESET: "输入你注册时使用的邮箱，我们将发送密码重置链接。",
   },
 
   // ============================================================
@@ -314,6 +406,32 @@ export const COPY = {
     SUSPENSION_NOTICE_BODY: "由于佣金欠款超过阈值，你的账户已被暂停。",
     VIEW_ORDER: "查看订单",
     CONTACT_SUPPORT: "联系客服",
+  },
+
+  // ============================================================
+  // 通用组件
+  // ============================================================
+  COMPONENTS: {
+    // ProofUploader
+    UPLOAD_IMAGE_ONLY: "请上传图片文件",
+    PROOF_UPLOADED: "付款凭证上传成功！",
+    PROOF_UPLOAD_FAILED: "上传失败",
+    PROOF_UPLOADED_WAITING: "付款凭证已上传，等待摄影师确认。",
+    DRAG_DROP_HINT: "拖拽微信支付截图到此处",
+    OR_CLICK_SELECT: "或点击选择文件",
+    SELECT_FILE: "选择文件",
+    SUBMITTING_PROOF: "上传中...",
+    SUBMIT_PROOF: "提交付款凭证",
+    PROOF_PREVIEW_ALT: "付款凭证预览",
+    // CalendarScheduler
+    SELECT_DATE: "选择日期",
+    NO_SLOTS_DATE: "该日期暂无可用时间段。",
+    BOOK_NOW: "立即预约",
+    DELETE_SLOT: "删除",
+    // LogoutButton
+    LOGOUT_TITLE: "退出登录",
+    // Dialog
+    CLOSE: "关闭",
   },
 } as const;
 
