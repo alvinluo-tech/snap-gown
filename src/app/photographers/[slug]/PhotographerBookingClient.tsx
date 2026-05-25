@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Camera, ArrowLeft } from "lucide-react";
 import { penceToPounds, penceToRMB } from "@/lib/utils";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import COPY from "@/lib/constants/copy";
 
@@ -26,6 +27,7 @@ interface Photographer {
   gowns_json: unknown;
   wechat_qr_url: string | null;
   account_status: string | null;
+  avatar_url: string | null;
 }
 
 interface Slot {
@@ -35,6 +37,7 @@ interface Slot {
   end_time: string;
   status: string;
   photographer_id: string;
+  price_pence?: number;
   profiles?: {
     full_name: string;
     bio: string | null;
@@ -43,9 +46,6 @@ interface Slot {
     account_status: string | null;
   };
 }
-
-// Default price: £150
-const DEFAULT_PRICE_PENCE = 15000;
 
 export function PhotographerBookingClient({
   photographer,
@@ -60,11 +60,7 @@ export function PhotographerBookingClient({
   const handleBookSlot = async (slot: Slot) => {
     setBooking(true);
     try {
-      const order = await bookSlot(
-        slot.id,
-        photographer.id,
-        DEFAULT_PRICE_PENCE
-      );
+      const order = await bookSlot(slot.id, photographer.id);
       toast.success(COPY.PHOTOGRAPHER_PAGE.SLOT_RESERVED);
       router.push(`/checkout/${order.id}`);
     } catch (err) {
@@ -95,9 +91,17 @@ export function PhotographerBookingClient({
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">
-                {photographer.full_name}
-              </CardTitle>
+              <div className="flex items-center gap-4">
+                <Avatar size="lg">
+                  {photographer.avatar_url ? (
+                    <AvatarImage src={photographer.avatar_url} alt={photographer.full_name} />
+                  ) : null}
+                  <AvatarFallback>{photographer.full_name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <CardTitle className="text-2xl">
+                  {photographer.full_name}
+                </CardTitle>
+              </div>
               <Badge>{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
             </div>
             {photographer.bio && (
@@ -106,10 +110,13 @@ export function PhotographerBookingClient({
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 text-sm">
-              <span className="font-medium">
-                {COPY.PHOTOGRAPHER_PAGE.PRICE_LABEL} £{penceToPounds(DEFAULT_PRICE_PENCE)} (¥
-                {penceToRMB(DEFAULT_PRICE_PENCE)})
-              </span>
+              {slots.length > 0 && (
+                <span className="font-medium">
+                  {COPY.PHOTOGRAPHER_PAGE.FROM_PRICE(
+                    penceToPounds(Math.min(...slots.map((s) => s.price_pence || 15000)))
+                  )}
+                </span>
+              )}
               <span className="text-muted-foreground">
                 {COPY.PHOTOGRAPHER_PAGE.PAYMENT_VIA_WECHAT}
               </span>

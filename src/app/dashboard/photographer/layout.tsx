@@ -2,11 +2,11 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Camera, ArrowLeft, LayoutDashboard, ShoppingCart, Users, DollarSign, GraduationCap, User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Camera, ArrowLeft, ShoppingCart, Calendar, User } from "lucide-react";
 import COPY from "@/lib/constants/copy";
 
-export default async function AdminLayout({
+export default async function PhotographerLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -21,13 +21,17 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name, avatar_url")
+    .select("role, avatar_url, commission_owed_pence")
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "ADMIN") {
+  if (!profile || profile.role !== "PHOTOGRAPHER") {
     redirect("/");
   }
+
+  const initials = user.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "PG";
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,47 +45,35 @@ export default async function AdminLayout({
               </Button>
             </Link>
             <Camera className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">{COPY.HOME.ADMIN_DASHBOARD}</span>
+            <span className="text-xl font-bold">
+              {COPY.PHOTOGRAPHER_DASHBOARD.TITLE}
+            </span>
           </div>
           <nav className="flex items-center gap-2">
-            <Link href="/dashboard/admin">
-              <Button variant="ghost" size="sm">
-                <LayoutDashboard className="h-4 w-4 mr-1" />
-                {COPY.ADMIN.OVERVIEW}
-              </Button>
-            </Link>
-            <Link href="/dashboard/admin/orders">
+            <Link href="/dashboard/photographer/orders">
               <Button variant="ghost" size="sm">
                 <ShoppingCart className="h-4 w-4 mr-1" />
-                {COPY.ADMIN.ORDERS}
+                {COPY.PHOTOGRAPHER_DASHBOARD.ORDER_MANAGEMENT}
               </Button>
             </Link>
-            <Link href="/dashboard/admin/photographers">
+            <Link href="/dashboard/photographer/slots">
               <Button variant="ghost" size="sm">
-                <Users className="h-4 w-4 mr-1" />
-                {COPY.ADMIN.PHOTOGRAPHERS}
+                <Calendar className="h-4 w-4 mr-1" />
+                {COPY.PHOTOGRAPHER_DASHBOARD.MANAGE_SLOTS}
               </Button>
             </Link>
-            <Link href="/dashboard/admin/commission">
+            <Link href="/dashboard/profile">
               <Button variant="ghost" size="sm">
-                <DollarSign className="h-4 w-4 mr-1" />
-                {COPY.ADMIN.COMMISSION}
-              </Button>
-            </Link>
-            <Link href="/dashboard/admin/students">
-              <Button variant="ghost" size="sm">
-                <GraduationCap className="h-4 w-4 mr-1" />
-                {COPY.ADMIN.STUDENTS}
+                <User className="h-4 w-4 mr-1" />
+                {COPY.PROFILE.TITLE}
               </Button>
             </Link>
             <Link href="/dashboard/profile">
               <Avatar size="sm">
-                {profile?.avatar_url ? (
-                  <AvatarImage src={profile.avatar_url} alt={profile?.full_name || "Admin"} />
+                {profile.avatar_url ? (
+                  <AvatarImage src={profile.avatar_url} alt="Avatar" />
                 ) : null}
-                <AvatarFallback>
-                  <User className="h-3 w-3" />
-                </AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </Link>
           </nav>
