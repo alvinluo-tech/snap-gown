@@ -11,9 +11,11 @@
 7. [后端设计](#7-后端设计)
 8. [核心业务流程](#8-核心业务流程)
 9. [支付流程](#9-支付流程)
-10. [认证与安全](#10-认证与安全)
-11. [部署与环境配置](#11-部署与环境配置)
-12. [国际化与文案管理](#12-国际化与文案管理)
+10. [邮件通知系统](#10-邮件通知系统)
+11. [认证与安全](#11-认证与安全)
+12. [法律合规](#12-法律合规)
+13. [国际化与文案管理](#13-国际化与文案管理)
+14. [部署与环境配置](#14-部署与环境配置)
 
 ---
 
@@ -25,9 +27,11 @@ SnapGown 是一个面向英国大学（以杜伦大学为主）的毕业照拍�
 
 ### 1.2 核心功能
 
-- **学生端**：浏览摄影师、预约档期、微信支付、上传付款凭证
-- **摄影师端**：管理可用档期、审核付款凭证、管理订单、个人资料展示
-- **管理员端**：审核摄影师、管理订单、佣金结算、数据分析
+- **学生端**：浏览摄影师、预约档期、微信支付、上传付款凭证、查看订单状态
+- **摄影师端**：管理可用档期、审核付款凭证、管理订单、个人资料展示、佣金查看
+- **管理员端**：审核摄影师、管理订单、佣金结算、数据分析、学生管理
+- **邮件通知**：付款通知（摄影师）、预约确认（学生）、佣金催缴（摄影师）、超时提醒（管理员）
+- **法律合规**：平台免责声明、天气/改期政策、注册条款、GDPR 隐私授权
 
 ### 1.3 目标用户
 
@@ -115,7 +119,7 @@ SnapGown 是一个面向英国大学（以杜伦大学为主）的毕业照拍�
 ┌─────────────────────────────────────────────────────────────────┤
 │                    外部服务                                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  ├── Resend - 邮件通知服务                                       │
+│  ├── Resend - 邮件通知服务 (3 场景模板 + 超时提醒)                │
 │  └── 微信支付 - 线下转账 (非在线支付)                              │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -126,6 +130,11 @@ SnapGown 是一个面向英国大学（以杜伦大学为主）的毕业照拍�
 学生预约流程:
 学生 → 浏览摄影师 → 选择档期 → bookSlot() → 创建订单 → 支付页面
      → 微信转账 → 上传凭证 → 摄影师审核 → 确认/拒绝 → 完成
+     ↓                    ↓              ↓           ↓
+     └── 邮件通知: ───────┘              │           │
+         场景A: 摄影师收到付款通知        │           │
+         场景B: 学生收到预约确认          │           │
+         场景C: 佣金超限→摄影师催缴       └───────────┘
 
 摄影师管理流程:
 摄影师 → 登录 → 管理档期 (创建/删除) → 接收订单通知
@@ -134,6 +143,7 @@ SnapGown 是一个面向英国大学（以杜伦大学为主）的毕业照拍�
 管理员运营流程:
 管理员 → 登录 → 审核摄影师申请 → 管理订单 → 佣金结算
      → 监控平台数据 → 处理异常订单
+     → 超时提醒 (12h 未审核 → 邮件通知管理员)
 ```
 
 ---
@@ -549,11 +559,9 @@ src/app/
 ├── page.tsx                          # 首页
 ├── layout.tsx                        # 根布局
 ├── globals.css                       # 全局样式
-├── middleware.ts                      # 中间件
+├── middleware.ts                      # 中间件 (认证检查)
 ├── auth/
-│   ├── page.tsx                      # 登录/注册页面
-│   ├── callback/
-│   │   └── route.ts                  # OAuth 回调
+│   ├── page.tsx                      # 登录/注册页面 (含注册条款勾选)
 │   └── reset-password/
 │       └── page.tsx                  # 重置密码页面
 ├── photographers/
@@ -562,8 +570,11 @@ src/app/
 │       └── PhotographerBookingClient.tsx
 ├── checkout/
 │   └── [orderId]/
-│       ├── page.tsx                  # 支付结账页面
+│       ├── page.tsx                  # 支付结账页面 (含免责声明勾选)
 │       └── CheckoutClient.tsx
+├── rules/
+│   └── weather/
+│       └── page.tsx                  # 天气/改期政策页 (中英双语)
 ├── dashboard/
 │   ├── student/
 │   │   └── page.tsx                  # 学生仪表板
@@ -594,12 +605,12 @@ src/app/
 │       ├── page.tsx                  # 个人资料设置
 │       └── ProfileSettingsClient.tsx
 └── actions/
-    ├── auth-check.ts                 # 认证检查
+    ├── auth-check.ts                 # 认证检查 (邮箱查重)
     ├── booking.ts                    # 预约相关
     ├── slots.ts                      # 档期相关
-    ├── verification.ts               # 验证相关
-    ├── profile.ts                    # 个人资料相关
-    └── payment.ts                    # 支付相关
+    ├── verification.ts               # 验证+管理员认证 (确认/拒绝/超时/佣金)
+    ├── profile.ts                    # 个人资料 (头像/微信码/基本信息)
+    └── payment.ts                    # 支付凭证上传
 ```
 
 ### 6.2 组件设计
@@ -630,12 +641,11 @@ src/components/ui/
 ```
 src/components/
 ├── CalendarScheduler.tsx    # 日历调度器（档期选择/管理）
-├── ImageUploader.tsx        # 图片上传组件
+├── ImageUploader.tsx        # 通用图片上传组件（头像/收款码等）
 ├── ProofUploader.tsx        # 付款凭证上传组件
 ├── LogoutButton.tsx         # 退出登录按钮
 ├── ThemeProvider.tsx         # 主题提供者
-├── ThemeToggle.tsx           # 主题切换按钮
-└── ThemeToggle.tsx           # 主题切换
+└── ThemeToggle.tsx           # 主题切换按钮
 ```
 
 ### 6.3 主题系统
@@ -671,58 +681,108 @@ export function ThemeProvider({ children, ...props }) {
 #### 7.1.1 预约相关 (booking.ts)
 
 ```typescript
-// bookSlot - 预约档期
+// bookSlot - 预约档期（锁定30分钟 + 创建订单）
 export async function bookSlot(slotId: string, photographerId: string)
 
-// cancelBooking - 取消预约
+// cancelBooking - 取消预约（释放档期）
 export async function cancelBooking(orderId: string)
 
-// getStudentOrders - 获取学生订单
+// getStudentOrders - 获取学生订单列表
 export async function getStudentOrders()
 ```
 
 #### 7.1.2 档期相关 (slots.ts)
 
 ```typescript
-// getAvailableSlots - 获取可用档期
+// getAvailableSlots - 获取可用档期（按学校/日期）
 export async function getAvailableSlots(schoolSlug: string, date: string)
 
-// getPhotographerSlots - 获取摄影师档期
+// getPhotographerSlots - 获取摄影师档期（挂起时不返回）
 export async function getPhotographerSlots(photographerId: string)
 
-// createSlot - 创建档期
+// createSlot - 创建单个档期（需已审核通过）
 export async function createSlot(formData: FormData)
 
-// deleteSlot - 删除档期
+// deleteSlot - 删除档期（仅 AVAILABLE 状态）
 export async function deleteSlot(slotId: string)
 
-// batchCreateSlots - 批量创建档期
+// batchCreateSlots - 批量创建档期（日期范围 + 统一时间/价格）
 export async function batchCreateSlots(formData: FormData)
 ```
 
-#### 7.1.3 验证相关 (verification.ts)
+#### 7.1.3 支付凭证上传 (payment.ts)
 
 ```typescript
-// confirmPayment - 确认付款
-export async function confirmPayment(orderId: string)
-
-// completeOrder - 完成订单
-export async function completeOrder(orderId: string)
-
-// rejectPayment - 拒绝付款
-export async function rejectPayment(orderId: string, reason: string)
-
-// markOverdue - 标记超时
-export async function markOverdue(orderId: string)
-
-// adminConfirmOrder - 管理员确认
-export async function adminConfirmOrder(orderId: string)
-
-// adminRejectOrder - 管理员拒绝
-export async function adminRejectOrder(orderId: string, reason: string)
+// uploadPaymentProof - 上传付款截图（触发场景A邮件通知摄影师）
+export async function uploadPaymentProof(orderId: string, file: File)
 ```
 
-#### 7.1.4 个人资料相关 (profile.ts)
+#### 7.1.4 验证+订单管理 (verification.ts)
+
+```typescript
+// confirmPayment - 摄影师确认付款（触发场景B邮件通知学生）
+export async function confirmPayment(orderId: string)
+
+// completeOrder - 标记订单完成（写入佣金台账，触发场景C熔断检查）
+export async function completeOrder(orderId: string)
+
+// rejectPayment - 拒绝付款凭证（释放档期）
+export async function rejectPayment(orderId: string, reason: string)
+
+// markOverdue - 标记12小时审核超时（触发管理员邮件提醒）
+export async function markOverdue(orderId: string)
+
+// adminConfirmOrder - 管理员强制确认（RPC）
+export async function adminConfirmOrder(orderId: string)
+
+// adminRejectOrder - 管理员强制拒绝（RPC）
+export async function adminRejectOrder(orderId: string, reason: string)
+
+// getAdminOrders - 获取所有订单（管理员）
+export async function getAdminOrders()
+
+// getAdminStats - 获取订单统计（管理员）
+export async function getAdminStats()
+
+// getPhotographerOrders - 获取摄影师订单列表
+export async function getPhotographerOrders()
+
+// getPhotographerDebt - 查询摄影师佣金欠款
+export async function getPhotographerDebt(photographerId: string)
+```
+
+#### 7.1.5 管理员认证+摄影师管理 (verification.ts)
+
+```typescript
+// verifyAdmin - 内部函数：验证管理员身份
+async function verifyAdmin()
+
+// adminApprovePhotographer - 审核摄影师（批准/拒绝）
+export async function adminApprovePhotographer(photographerId: string, status: "APPROVED" | "REJECTED")
+
+// adminSuspendPhotographer - 暂停/恢复摄影师
+export async function adminSuspendPhotographer(photographerId: string, suspend: boolean)
+
+// adminClearDebt - 清除佣金欠款
+export async function adminClearDebt(photographerId: string)
+
+// getAdminStatsEnhanced - 增强版统计（含最近订单/待审核摄影师/用户总数）
+export async function getAdminStatsEnhanced()
+
+// getAdminCommissionLedger - 获取佣金账本
+export async function getAdminCommissionLedger()
+
+// adminSettleCommission - 结算佣金
+export async function adminSettleCommission(ledgerId: string)
+
+// adminWaiveCommission - 免除佣金（减少欠款）
+export async function adminWaiveCommission(ledgerId: string)
+
+// getAdminStudents - 获取学生列表（含订单统计）
+export async function getAdminStudents()
+```
+
+#### 7.1.6 个人资料相关 (profile.ts)
 
 ```typescript
 // getMyProfile - 获取个人资料
@@ -731,11 +791,18 @@ export async function getMyProfile()
 // updateProfile - 更新个人资料
 export async function updateProfile(formData: FormData)
 
-// uploadAvatar - 上传头像
+// uploadAvatar - 上传头像（2MB限制，自动删除旧文件）
 export async function uploadAvatar(file: File)
 
-// uploadWeChatQR - 上传微信收款码
+// uploadWeChatQR - 上传微信收款码（5MB限制，自动删除旧文件）
 export async function uploadWeChatQR(file: File)
+```
+
+#### 7.1.7 认证检查 (auth-check.ts)
+
+```typescript
+// checkEmailExists - 检查邮箱是否已注册（管理员权限查重）
+export async function checkEmailExists(email: string): Promise<boolean>
 ```
 
 ### 7.2 Supabase 客户端
@@ -831,13 +898,16 @@ export const config = {
 │                                                                 │
 │  7. 上传付款凭证                                                │
 │     ├── 上传微信支付截图                                         │
-│     └── 订单状态：PENDING_PAYMENT → PROOF_SUBMITTED             │
+│     ├── 订单状态：PENDING_PAYMENT → PROOF_SUBMITTED             │
+│     └── 触发邮件：场景A → 通知摄影师有新付款凭证                  │
 │                                                                 │
 │  8. 等待审核                                                    │
-│     └── 摄影师有 12 小时审核                                      │
+│     ├── 摄影师有 12 小时审核                                      │
+│     └── 超时未审核 → 场景D → 通知管理员                          │
 │                                                                 │
 │  9. 审核结果                                                    │
 │     ├── 确认：PROOF_SUBMITTED → CONFIRMED → 档期 BOOKED        │
+│     │   └── 触发邮件：场景B → 通知学生预约已确认                  │
 │     └── 拒绝：PROOF_SUBMITTED → CANCELLED → 档期 AVAILABLE     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -954,12 +1024,12 @@ export const config = {
 摄影师收入 = 订单金额 - 平台佣金
 ```
 
-### 9.4 佣金阈值机制
+### 9.4 佣金阈值机制（熔断）
 
 当摄影师佣金欠款超过 £30.00 (3000 pence) 时：
-1. 自动暂停摄影师账户
-2. 发送暂停通知邮件
-3. 阻止接收新预约
+1. 自动暂停摄影师账户 (SUSPENDED)
+2. 触发邮件：场景C → 通知摄影师佣金欠款及缴纳方式
+3. 阻止接收新预约（档期不对外展示）
 
 ### 9.5 支付状态机
 
@@ -1012,15 +1082,65 @@ export const config = {
 
 ---
 
-## 10. 认证与安全
+## 10. 邮件通知系统
 
-### 10.1 认证流程
+平台通过 Resend 服务发送自动化邮件通知，覆盖订单全生命周期。
+
+### 10.1 邮件场景
+
+| 场景 | 触发时机 | 收件人 | 模板 |
+|------|----------|--------|------|
+| A: 付款通知 | 学生上传付款凭证 | 摄影师 | `getEmailTemplateA_CN` |
+| B: 预约确认 | 摄影师确认付款 | 学生 | `getEmailTemplateB_CN` |
+| C: 佣金催缴 | 累计佣金 > £30 | 摄影师 | `getEmailTemplateC_CN` |
+| D: 超时提醒 | 12h 未审核 | 管理员 | 内联 HTML |
+
+### 10.2 技术实现
+
+```
+src/lib/constants/emails.ts    # 6 个模板函数 (3场景 × 中英双语)
+src/lib/resend.ts              # 4 个发送函数
+src/app/actions/payment.ts     # 上传凭证时触发场景A
+src/app/actions/verification.ts # 确认/完成/超时时触发场景B/C/D
+```
+
+### 10.3 邮件模板数据
+
+**场景 A (付款通知)**:
+- photographer_name, student_name, booking_id
+- shoot_date, shoot_time, shoot_location
+- package_name, amount_cny
+- confirm_payment_url, payment_issue_url
+
+**场景 B (预约确认)**:
+- student_name, photographer_name, booking_id
+- shoot_date, shoot_time, meeting_point
+- package_name, duration, deliverables
+- booking_url, weather_policy_url
+
+**场景 C (佣金催缴)**:
+- photographer_name, outstanding_commission
+- admin_payment_qr_url
+- upload_commission_receipt_url, commission_dispute_url
+
+### 10.4 注意事项
+
+- 当前仅使用中文模板（CN），英文模板（EN）已定义但未接入发送函数
+- 邮件发送失败不影响核心业务流程（try-catch 静默处理）
+- 超时提醒使用内联 HTML，未使用模板系统
+
+---
+
+## 11. 认证与安全
+
+### 11.1 认证流程
 
 使用 Supabase Auth 进行用户认证：
 
 1. **注册流程**
    - 第一步：选择角色 + 姓名 + 邮箱 + 密码
    - 第二步：微信 ID + 手机号（选填）+ 确认密码
+   - 阅读并勾选《SnapGown 用户注册条款》
    - 验证邮箱后完成注册
 
 2. **登录流程**
@@ -1032,7 +1152,7 @@ export const config = {
    - 通过 Cookie 存储
    - 自动刷新 Token
 
-### 10.2 安全措施
+### 11.2 安全措施
 
 1. **行级安全 (RLS)**
    - 所有表启用 RLS
@@ -1054,7 +1174,7 @@ export const config = {
    - 限制文件大小
    - 使用用户 ID 作为文件夹隔离
 
-### 10.3 环境变量
+### 11.3 环境变量
 
 ```env
 # Supabase
@@ -1067,16 +1187,87 @@ NEXT_PUBLIC_EXCHANGE_RATE=9.30
 
 # Resend (邮件)
 RESEND_API_KEY=
+RESEND_FROM_EMAIL=SnapGown <noreply@mail.alvin-luo.me>
 
 # 应用
-NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_SITE_URL=
+ADMIN_EMAIL=
 ```
 
 ---
 
-## 11. 部署与环境配置
+## 12. 法律合规
 
-### 11.1 开发环境
+平台内置完整的法律条款体系，覆盖英国 GDPR、消费者权益和平台责任。
+
+### 12.1 条款内容
+
+| 条款 | 存储位置 | 展示位置 |
+|------|----------|----------|
+| 平台免责声明 | `DISCLAIMER_CN` / `DISCLAIMER_EN` | 结账页面 (强制阅读+勾选) |
+| 天气/改期政策 | `WEATHER_POLICY_CN` / `WEATHER_POLICY_EN` | `/rules/weather` 页面 |
+| 注册条款 | `REGISTRATION_TERMS` | 注册页面 (强制勾选) |
+
+### 12.2 强制交互
+
+- **结账页面**: 学生必须勾选"已阅读并同意平台免责声明"后方可上传付款凭证
+- **注册页面**: 用户必须勾选"已阅读并同意《SnapGown 用户注册条款》"后方可完成注册
+
+### 12.3 GDPR 合规
+
+- 用户数据收集范围在注册条款中明确告知
+- 仅收集订单撮合和通知发送所必需的数据
+- 不向第三方出售用户数据
+- 用户有权申请查阅、更正或删除个人数据
+
+### 12.4 条款文件
+
+所有法律条款集中管理在 `src/lib/constants/copy.ts`，采用 Markdown 格式存储，前端通过弹窗展示完整内容。
+
+---
+
+## 13. 国际化与文案管理
+
+### 13.1 文案字典
+
+项目使用集中式文案管理，所有前端文本通过 `src/lib/constants/copy.ts` 引用。
+
+**COPY 对象包含 13 个模块**：BRAND, COMMON, HOME, CHECKOUT, STUDENT, PHOTOGRAPHER_DASHBOARD, ADMIN, PHOTOGRAPHER_PAGE, PROFILE, AUTH, EMAIL, COMPONENTS, LEGAL
+
+**独立导出常量**（法律/政策条款，Markdown 格式）：
+- `DISCLAIMER_CN` / `DISCLAIMER_EN` — 平台免责声明
+- `WEATHER_POLICY_CN` / `WEATHER_POLICY_EN` — 天气/改期政策
+- `REGISTRATION_TERMS` — 用户注册条款
+
+```typescript
+import COPY, { DISCLAIMER_CN, WEATHER_POLICY_CN, REGISTRATION_TERMS } from "@/lib/constants/copy";
+```
+
+### 13.2 使用规范
+
+1. **严禁硬编码**：所有中文文本必须通过 `COPY` 字典引用
+2. **按模块分组**：文案按功能模块组织
+3. **动态文案**：使用函数生成动态内容
+4. **类型安全**：TypeScript 类型检查
+
+### 13.3 示例
+
+```typescript
+// ❌ 错误
+<Button>登录</Button>
+
+// ✅ 正确
+<Button>{COPY.COMMON.LOGIN}</Button>
+
+// ✅ 动态文案
+<p>{COPY.HOME.WELCOME_BACK(profile.full_name)}</p>
+```
+
+---
+
+## 14. 部署与环境配置
+
+### 14.1 开发环境
 
 ```bash
 # 安装依赖
@@ -1092,14 +1283,14 @@ pnpm build
 pnpm start
 ```
 
-### 11.2 Supabase 配置
+### 14.2 Supabase 配置
 
 1. 创建 Supabase 项目
 2. 运行数据库迁移
 3. 配置存储桶
 4. 设置环境变量
 
-### 11.3 数据库迁移
+### 14.3 数据库迁移
 
 ```bash
 # 初始化 Supabase
@@ -1116,59 +1307,15 @@ supabase start
 supabase db push --local
 ```
 
-### 11.4 生产环境检查清单
+### 14.4 生产环境检查清单
 
 - [ ] 环境变量配置正确
 - [ ] 数据库迁移已应用
 - [ ] 存储桶已创建并配置权限
 - [ ] RLS 策略已启用
-- [ ] 邮件服务已配置
+- [ ] 邮件服务已配置 (Resend API Key + From Email)
+- [ ] 管理员邮箱已配置 (ADMIN_EMAIL)
 - [ ] 域名和 SSL 证书已配置
-
----
-
-## 12. 国际化与文案管理
-
-### 12.1 文案字典
-
-项目使用集中式文案管理，所有前端文本通过 `src/lib/constants/copy.ts` 引用：
-
-```typescript
-export const COPY = {
-  BRAND: {
-    NAME: "SnapGown",
-    TAGLINE: "预约你的毕业照拍摄",
-  },
-  COMMON: {
-    LOGIN: "登录",
-    DASHBOARD: "控制台",
-  },
-  HOME: {
-    HERO_TITLE: "预约你的毕业照拍摄",
-  },
-  // ... 更多文案
-};
-```
-
-### 12.2 使用规范
-
-1. **严禁硬编码**：所有中文文本必须通过 `COPY` 字典引用
-2. **按模块分组**：文案按功能模块组织
-3. **动态文案**：使用函数生成动态内容
-4. **类型安全**：TypeScript 类型检查
-
-### 12.3 示例
-
-```typescript
-// ❌ 错误
-<Button>登录</Button>
-
-// ✅ 正确
-<Button>{COPY.COMMON.LOGIN}</Button>
-
-// ✅ 动态文案
-<p>{COPY.HOME.WELCOME_BACK(profile.full_name)}</p>
-```
 
 ---
 
@@ -1206,6 +1353,6 @@ cn("class1", "class2") // "class1 class2"
 
 ---
 
-**文档版本**: 1.0  
-**最后更新**: 2026-05-25  
+**文档版本**: 2.0
+**最后更新**: 2026-05-25
 **维护者**: Alvin
