@@ -387,3 +387,261 @@ export async function getPhotographerDebt(photographerId: string) {
 
   return profile?.commission_owed_pence || 0;
 }
+
+// === Admin: Photographer Management ===
+
+async function verifyAdmin() {
+  const supabase = await createSupabaseServer();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (!user || authError) throw new Error("Unauthorized");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "ADMIN") throw new Error("Admin access required");
+  return { supabase, user };
+}
+
+export async function adminApprovePhotographer(
+  photographerId: string,
+  status: "APPROVED" | "REJECTED"
+) {
+  await verifyAdmin();
+  const admin = createSupabaseAdmin();
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ approval_status: status })
+    .eq("id", photographerId);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function adminSuspendPhotographer(
+  photographerId: string,
+  suspend: boolean
+) {
+  await verifyAdmin();
+  const admin = createSupabaseAdmin();
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ account_status: suspend ? "SUSPENDED" : "ACTIVE" })
+    .eq("id", photographerId);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function adminClearDebt(photographerId: string) {
+  await verifyAdmin();
+  const admin = createSupabaseAdmin();
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ commission_owed_pence: 0, account_status: "ACTIVE" })
+    .eq("id", photographerId);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+// === Admin: Enhanced Stats ===
+
+export async function getAdminStatsEnhanced() {
+  const { supabase } = await verifyAdmin();
+
+  // Get counts for each status
+  const statuses = [
+    "PENDING_PAYMENT",
+    "PROOF_SUBMITTED",
+    "CONFIRMED",
+    "VERIFICATION_OVERDUE",
+    "COMPLETED",
+    "CANCELLED",
+  ] as const;
+
+  const stats: Record<string, number> = {};
+  for (const status of statuses) {
+    const { count } = await supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("status", status);
+    stats[status] = count || 0;
+  }
+
+  // Total commission owed
+  const { data: photographers } = await supabase
+    .from("profiles")
+    .select("commission_owed_pence")
+    .eq("role", "PHOTOGRAPHER");
+
+  const totalCommission = (photographers || []).reduce(
+    (sum, p) => sum + (p.commission_owed_pence || 0),
+    0
+  );
+
+  // Pending approvals
+  const { count: pendingApprovals } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "PHOTOGRAPHER")
+    .eq("approval_status", "PENDING");
+
+  // Recent orders (latest 5)
+  const { data: recentOrders } = await supabase
+    .from("orders")
+    .select(
+      "id, order_no, payment_ref, status, total_amount_pence, created_at, student:profiles!user_id(full_name), photographer:profiles!photographer_id(full_name)"
+    )
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  // Pending photographers (latest 5)
+  const { data: pendingPhotographers } = await supabase
+    .from("profiles")
+    .select("id, full_name, wechat_id, updated_at")
+    .eq("role", "PHOTOGRAPHER")
+    .eq("approval_status", "PENDING")
+    .order("updated_at", { ascending: false })
+    .limit(5);
+
+  // Total students
+  const { count: totalStudents } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "STUDENT");
+
+  // Total photographers
+  const { count: totalPhotographers } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "PHOTOGRAPHER");
+
+  return {
+    orderStats: stats,
+    totalCommissionPence: totalCommission,
+    pendingApprovals: pendingApprovals || 0,
+    recentOrders: recentOrders || [],
+    pendingPhotographers: pendingPhotographers || [],
+    totalStudents: totalStudents || 0,
+    totalPhotographers: totalPhotographers || 0,
+  };
+}
+
+// === Admin: Commission Ledger ===
+
+export async function getAdminCommissionLedger() {
+  await verifyAdmin();
+  const supabase = await createSupabaseServer();
+
+  const { data, error } = await supabase
+    .from("commission_ledger")
+    .select(
+      "*, photographer:profiles!photographer_id(full_name), order:orders(order_no, total_amount_pence)"
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function adminSettleCommission(ledgerId: string) {
+  const { user } = await verifyAdmin();
+  const admin = createSupabaseAdmin();
+
+  const { error } = await admin
+    .from("commission_ledger")
+    .update({
+      ledger_status: "SETTLED",
+      settled_at: new Date().toISOString(),
+      settled_by: user.id,
+    })
+    .eq("id", ledgerId);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function adminWaiveCommission(ledgerId: string) {
+  const { user } = await verifyAdmin();
+  const admin = createSupabaseAdmin();
+
+  // Get the ledger entry to update photographer's debt
+  const { data: ledger } = await admin
+    .from("commission_ledger")
+    .select("photographer_id, platform_fee_pence")
+    .eq("id", ledgerId)
+    .single();
+
+  if (!ledger) throw new Error("Ledger entry not found");
+
+  // Mark as waived
+  const { error } = await admin
+    .from("commission_ledger")
+    .update({
+      ledger_status: "WAIVED",
+      settled_at: new Date().toISOString(),
+      settled_by: user.id,
+      note: "Waived by admin",
+    })
+    .eq("id", ledgerId);
+
+  if (error) throw new Error(error.message);
+
+  // Decrease photographer's commission_owed
+  await admin.rpc("increment_commission_owed", {
+    target_photographer_id: ledger.photographer_id,
+    amount_pence: -ledger.platform_fee_pence,
+  });
+
+  return { success: true };
+}
+
+// === Admin: Students ===
+
+export async function getAdminStudents() {
+  await verifyAdmin();
+  const supabase = await createSupabaseServer();
+
+  const { data: students, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, wechat_id, uk_phone, updated_at")
+    .eq("role", "STUDENT")
+    .order("updated_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  // Get order stats for each student
+  const studentsWithStats = await Promise.all(
+    (students || []).map(async (s) => {
+      const { count: orderCount } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", s.id);
+
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("total_amount_pence")
+        .eq("user_id", s.id)
+        .eq("status", "COMPLETED");
+
+      const totalSpent = (orders || []).reduce(
+        (sum, o) => sum + o.total_amount_pence,
+        0
+      );
+
+      return {
+        ...s,
+        orderCount: orderCount || 0,
+        totalSpentPence: totalSpent,
+      };
+    })
+  );
+
+  return studentsWithStats;
+}

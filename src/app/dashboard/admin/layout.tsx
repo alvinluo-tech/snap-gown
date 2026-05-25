@@ -2,7 +2,7 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Camera, ArrowLeft, LayoutDashboard, ShoppingCart, Users } from "lucide-react";
+import { Camera, ArrowLeft, LayoutDashboard, ShoppingCart, Users, DollarSign, GraduationCap } from "lucide-react";
 
 export default async function AdminLayout({
   children,
@@ -58,6 +58,18 @@ export default async function AdminLayout({
               <Button variant="ghost" size="sm">
                 <Users className="h-4 w-4 mr-1" />
                 Photographers
+              </Button>
+            </Link>
+            <Link href="/dashboard/admin/commission">
+              <Button variant="ghost" size="sm">
+                <DollarSign className="h-4 w-4 mr-1" />
+                Commission
+              </Button>
+            </Link>
+            <Link href="/dashboard/admin/students">
+              <Button variant="ghost" size="sm">
+                <GraduationCap className="h-4 w-4 mr-1" />
+                Students
               </Button>
             </Link>
           </nav>

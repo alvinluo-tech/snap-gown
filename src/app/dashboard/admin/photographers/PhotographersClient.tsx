@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import {
+  adminApprovePhotographer,
+  adminSuspendPhotographer,
+  adminClearDebt,
+} from "@/app/actions/verification";
 import { penceToPounds } from "@/lib/utils";
 import {
   Card,
@@ -20,8 +24,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Ban, Check, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Ban, Check, Clock, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface PhotographerProfile {
   id: string;
@@ -43,6 +56,13 @@ export function PhotographersClient({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+  }>({ open: false, title: "", description: "", action: () => {} });
 
   const handleApproval = async (
     photographerId: string,
@@ -50,12 +70,7 @@ export function PhotographersClient({
   ) => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ approval_status: status })
-        .eq("id", photographerId);
-
-      if (error) throw error;
+      await adminApprovePhotographer(photographerId, status);
       toast.success(`Photographer ${status.toLowerCase()}`);
       router.refresh();
     } catch (err) {
@@ -68,55 +83,81 @@ export function PhotographersClient({
     photographerId: string,
     currentStatus: string | null
   ) => {
-    setLoading(true);
-    const newStatus = currentStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ account_status: newStatus })
-        .eq("id", photographerId);
-
-      if (error) throw error;
-      toast.success(`Account ${newStatus.toLowerCase()}`);
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
-    }
-    setLoading(false);
+    const suspend = currentStatus !== "SUSPENDED";
+    setConfirmDialog({
+      open: true,
+      title: suspend ? "Suspend Photographer?" : "Unsuspend Photographer?",
+      description: suspend
+        ? "This will prevent the photographer from receiving new bookings."
+        : "This will restore the photographer's ability to receive bookings.",
+      action: async () => {
+        setLoading(true);
+        try {
+          await adminSuspendPhotographer(photographerId, suspend);
+          toast.success(`Account ${suspend ? "suspended" : "reactivated"}`);
+          router.refresh();
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Failed");
+        }
+        setLoading(false);
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+      },
+    });
   };
 
-  const handleClearDebt = async (photographerId: string) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ commission_owed_pence: 0, account_status: "ACTIVE" })
-        .eq("id", photographerId);
-
-      if (error) throw error;
-      toast.success("Debt cleared and account reactivated");
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
-    }
-    setLoading(false);
+  const handleClearDebt = (photographerId: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Clear Debt?",
+      description:
+        "This will set the photographer's commission debt to £0.00 and reactivate their account.",
+      action: async () => {
+        setLoading(true);
+        try {
+          await adminClearDebt(photographerId);
+          toast.success("Debt cleared and account reactivated");
+          router.refresh();
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Failed");
+        }
+        setLoading(false);
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+      },
+    });
   };
 
-  const pendingPhotographers = photographers.filter(
+  const filtered = photographers.filter(
+    (p) =>
+      p.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      p.wechat_id.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const pendingPhotographers = filtered.filter(
     (p) => p.approval_status === "PENDING"
   );
-  const otherPhotographers = photographers.filter(
+  const otherPhotographers = filtered.filter(
     (p) => p.approval_status !== "PENDING"
   );
 
   return (
     <div className="space-y-6">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search by name or WeChat..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       {/* Pending Approvals */}
       {pendingPhotographers.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
+              <Clock className="h-5 w-5 text-warning" />
               Pending Approval ({pendingPhotographers.length})
             </CardTitle>
           </CardHeader>
@@ -177,7 +218,9 @@ export function PhotographersClient({
         <CardContent>
           {otherPhotographers.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No photographers registered yet.
+              {search
+                ? "No photographers match your search."
+                : "No photographers registered yet."}
             </p>
           ) : (
             <Table>
@@ -262,6 +305,38 @@ export function PhotographersClient({
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.open}
+        onOpenChange={(open) =>
+          setConfirmDialog((prev) => ({ ...prev, open }))
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmDialog.title}</DialogTitle>
+            <DialogDescription>{confirmDialog.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setConfirmDialog((prev) => ({ ...prev, open: false }))
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDialog.action}
+              disabled={loading}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

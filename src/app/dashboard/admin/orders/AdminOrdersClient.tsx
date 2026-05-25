@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { adminConfirmOrder, adminRejectOrder } from "@/app/actions/verification";
 import { penceToPounds, penceToRMB } from "@/lib/utils";
@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,7 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Search } from "lucide-react";
 
 interface AdminOrder {
   id: string;
@@ -49,6 +57,16 @@ interface AdminOrder {
   photographer: { full_name: string };
 }
 
+const STATUS_OPTIONS = [
+  "ALL",
+  "PENDING_PAYMENT",
+  "PROOF_SUBMITTED",
+  "CONFIRMED",
+  "VERIFICATION_OVERDUE",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
 export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -56,6 +74,8 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
   const [rejectReason, setRejectReason] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [viewProofUrl, setViewProofUrl] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const handleConfirm = async (orderId: string) => {
     setLoading(true);
@@ -91,7 +111,6 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
       case "COMPLETED":
         return "default";
       case "CANCELLED":
-        return "destructive";
       case "VERIFICATION_OVERDUE":
         return "destructive";
       case "PROOF_SUBMITTED":
@@ -101,123 +120,167 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
     }
   };
 
-  // Filter: show overdue and proof_submitted first
-  const urgentOrders = orders.filter(
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const matchesSearch =
+        !search ||
+        o.order_no.toLowerCase().includes(search.toLowerCase()) ||
+        o.payment_ref.toLowerCase().includes(search.toLowerCase()) ||
+        o.student?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        o.photographer?.full_name?.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL" || o.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, search, statusFilter]);
+
+  const urgentOrders = filteredOrders.filter(
     (o) => o.status === "VERIFICATION_OVERDUE" || o.status === "PROOF_SUBMITTED"
   );
-  const otherOrders = orders.filter(
+  const otherOrders = filteredOrders.filter(
     (o) => o.status !== "VERIFICATION_OVERDUE" && o.status !== "PROOF_SUBMITTED"
   );
 
   const renderOrderTable = (orderList: AdminOrder[], title: string) => (
-    <Card className="mb-6">
+    <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>
+          {title} ({orderList.length})
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {orderList.length === 0 ? (
           <p className="text-muted-foreground text-sm">No orders.</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Payment Ref</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Photographer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Proof</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orderList.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono text-xs">
-                    {order.order_no}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="font-mono">
-                      {order.payment_ref}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{order.student?.full_name}</TableCell>
-                  <TableCell>{order.photographer?.full_name}</TableCell>
-                  <TableCell>
-                    {order.availability_slots?.slot_date}
-                    <br />
-                    <span className="text-xs text-muted-foreground">
-                      {order.availability_slots?.start_time?.slice(0, 5)} -{" "}
-                      {order.availability_slots?.end_time?.slice(0, 5)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    £{penceToPounds(order.total_amount_pence)}
-                    <br />
-                    <span className="text-xs text-muted-foreground">
-                      ¥{penceToRMB(order.total_amount_pence)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(order.status)}>
-                      {order.status.replace(/_/g, " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {order.payment_proof_url ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setViewProofUrl(order.payment_proof_url)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {(order.status === "PROOF_SUBMITTED" ||
-                      order.status === "VERIFICATION_OVERDUE") && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleConfirm(order.id)}
-                          disabled={loading}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Confirm
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setSelectedOrderId(order.id);
-                            setRejectDialogOpen(true);
-                          }}
-                          disabled={loading}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Payment Ref</TableHead>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Photographer</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Proof</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {orderList.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-xs">
+                      {order.order_no}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono">
+                        {order.payment_ref}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{order.student?.full_name}</TableCell>
+                    <TableCell>{order.photographer?.full_name}</TableCell>
+                    <TableCell>
+                      {order.availability_slots?.slot_date}
+                      <br />
+                      <span className="text-xs text-muted-foreground">
+                        {order.availability_slots?.start_time?.slice(0, 5)} -{" "}
+                        {order.availability_slots?.end_time?.slice(0, 5)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      £{penceToPounds(order.total_amount_pence)}
+                      <br />
+                      <span className="text-xs text-muted-foreground">
+                        ¥{penceToRMB(order.total_amount_pence)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(order.status)}>
+                        {order.status.replace(/_/g, " ")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.payment_proof_url ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setViewProofUrl(order.payment_proof_url)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {(order.status === "PROOF_SUBMITTED" ||
+                        order.status === "VERIFICATION_OVERDUE") && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleConfirm(order.id)}
+                            disabled={loading}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Confirm
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setSelectedOrderId(order.id);
+                              setRejectDialogOpen(true);
+                            }}
+                            disabled={loading}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>
   );
 
   return (
-    <>
-      {renderOrderTable(urgentOrders, "Urgent (Needs Action)")}
-      {renderOrderTable(otherOrders, "All Other Orders")}
+    <div className="space-y-6">
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by order no, payment ref, student, or photographer..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status === "ALL" ? "All Statuses" : status.replace(/_/g, " ")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {urgentOrders.length > 0 && renderOrderTable(urgentOrders, "Urgent (Needs Action)")}
+      {renderOrderTable(otherOrders, "All Orders")}
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
@@ -259,6 +322,6 @@ export function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) {
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
