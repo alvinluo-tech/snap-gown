@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import COPY from "@/lib/constants/copy";
+import { penceToPounds } from "@/lib/utils";
 
 interface Slot {
   id: string;
@@ -16,6 +17,7 @@ interface Slot {
   end_time: string;
   status: string;
   photographer_id: string;
+  price_pence?: number;
   profiles?: {
     full_name: string;
     bio: string | null;
@@ -98,6 +100,11 @@ export function CalendarScheduler({
                       <span className="font-medium">
                         {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                       </span>
+                      {slot.price_pence && (
+                        <span className="text-sm font-medium text-primary">
+                          £{penceToPounds(slot.price_pence)}
+                        </span>
+                      )}
                       {slot.profiles && (
                         <span className="text-sm text-muted-foreground">
                           {slot.profiles.full_name}

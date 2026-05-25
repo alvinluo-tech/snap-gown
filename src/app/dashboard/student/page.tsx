@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Camera, ArrowLeft, Clock } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import COPY from "@/lib/constants/copy";
 
@@ -123,6 +124,7 @@ export default async function StudentDashboard() {
                     };
                     const photographer = order.profiles as unknown as {
                       full_name: string;
+                      avatar_url: string | null;
                     };
 
                     return (
@@ -135,7 +137,17 @@ export default async function StudentDashboard() {
                             {order.payment_ref}
                           </Badge>
                         </TableCell>
-                        <TableCell>{photographer?.full_name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar size="sm">
+                              {photographer?.avatar_url ? (
+                                <AvatarImage src={photographer.avatar_url} alt={photographer.full_name} />
+                              ) : null}
+                              <AvatarFallback>{photographer?.full_name?.charAt(0) || "?"}</AvatarFallback>
+                            </Avatar>
+                            {photographer?.full_name}
+                          </div>
+                        </TableCell>
                         <TableCell>{slot?.slot_date}</TableCell>
                         <TableCell>
                           {slot?.start_time?.slice(0, 5)} -{" "}

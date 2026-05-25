@@ -12,7 +12,7 @@ export default async function PhotographerPage({ params }: PageProps) {
 
   const { data: photographer } = await supabase
     .from("profiles")
-    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status")
+    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status, avatar_url")
     .eq("slug", slug)
     .eq("role", "PHOTOGRAPHER")
     .single();

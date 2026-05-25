@@ -200,6 +200,7 @@ export const COPY = {
     SLOT_CREATE_FAILED: "创建时间段失败",
     SLOTS_BATCH_CREATED: (count: number) => `已创建 ${count} 个时间段！`,
     BATCH_CREATE_FAILED: "批量创建失败",
+    SLOT_PRICE: "档期价格 (£)",
     SLOT_DELETED: "时间段已删除",
     SLOT_DELETE_FAILED: "删除失败",
   },
@@ -313,6 +314,38 @@ export const COPY = {
     BOOKING_FAILED: "预约失败",
     PRICE_LABEL: "价格：",
     PAYMENT_VIA_WECHAT: "通过微信支付",
+    FROM_PRICE: (price: string) => `从 £${price} 起`,
+  },
+
+  // ============================================================
+  // 个人资料
+  // ============================================================
+  PROFILE: {
+    TITLE: "个人资料",
+    EDIT_PROFILE: "编辑资料",
+    SAVE_PROFILE: "保存资料",
+    PROFILE_UPDATED: "个人资料已更新",
+    PROFILE_UPDATE_FAILED: "更新失败",
+    AVATAR_UPLOAD_SUCCESS: "头像上传成功",
+    AVATAR_UPLOAD_FAILED: "头像上传失败",
+    WECHAT_QR_UPLOAD_SUCCESS: "微信收款码上传成功",
+    WECHAT_QR_UPLOAD_FAILED: "上传失败",
+    FULL_NAME_LABEL: "姓名",
+    BIO_LABEL: "个人简介",
+    BIO_PLACEHOLDER: "介绍一下你的摄影风格和经验...",
+    WECHAT_ID_LABEL: "微信 ID",
+    UK_PHONE_LABEL: "英国手机号（选填）",
+    GOWNS_LABEL: "学士服信息",
+    ADD_GOWN: "添加学士服",
+    REMOVE_GOWN: "移除",
+    DEGREE_LABEL: "学位",
+    SIZE_LABEL: "尺码",
+    SLUG_LABEL: "个人主页链接",
+    WECHAT_QR_LABEL: "微信收款码",
+    WECHAT_QR_HINT: "学生扫码付款时使用",
+    AVATAR_LABEL: "头像",
+    AVATAR_HINT: "支持 JPG/PNG，最大 2MB",
+    WECHAT_QR_MAX_SIZE: "支持 JPG/PNG，最大 5MB",
   },
 
   // ============================================================

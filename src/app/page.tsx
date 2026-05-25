@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Camera, GraduationCap, MapPin, Clock, Shield, LogOut } from "lucide-react";
+import { Camera, GraduationCap, MapPin, Clock, Shield } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -20,11 +21,11 @@ export default async function HomePage() {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
 
-  let profile: { role: string; full_name: string } | null = null;
+  let profile: { role: string; full_name: string; avatar_url: string | null } | null = null;
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("role, full_name")
+      .select("role, full_name, avatar_url")
       .eq("id", user.id)
       .single();
     profile = data;
@@ -38,7 +39,7 @@ export default async function HomePage() {
     ? { data: null }
     : await supabase
         .from("profiles")
-        .select("id, slug, full_name, bio, gowns_json, account_status")
+        .select("id, slug, full_name, bio, gowns_json, account_status, avatar_url")
         .eq("role", "PHOTOGRAPHER")
         .eq("approval_status", "APPROVED")
         .eq("account_status", "ACTIVE")
@@ -81,9 +82,17 @@ export default async function HomePage() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <span className="text-sm text-muted-foreground hidden sm:inline">
-                  {profile?.full_name || user.email}
-                </span>
+                <Link href={dashboardHref} className="flex items-center gap-2">
+                  <Avatar size="sm">
+                    {profile?.avatar_url ? (
+                      <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+                    ) : null}
+                    <AvatarFallback>{(profile?.full_name || user.email || "").charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
+                    {profile?.full_name || user.email}
+                  </span>
+                </Link>
                 <Link href={dashboardHref}>
                   <Button>{COPY.COMMON.DASHBOARD}</Button>
                 </Link>
@@ -263,7 +272,15 @@ export default async function HomePage() {
                     <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                       <CardHeader>
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{p.full_name}</CardTitle>
+                          <div className="flex items-center gap-3">
+                            <Avatar size="lg">
+                              {p.avatar_url ? (
+                                <AvatarImage src={p.avatar_url} alt={p.full_name} />
+                              ) : null}
+                              <AvatarFallback>{p.full_name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <CardTitle className="text-lg">{p.full_name}</CardTitle>
+                          </div>
                           <Badge variant="secondary">{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
                         </div>
                         {p.bio && (

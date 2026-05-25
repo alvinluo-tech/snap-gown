@@ -63,6 +63,7 @@ export async function createSlot(formData: FormData) {
   const startTime = formData.get("start_time") as string;
   const endTime = formData.get("end_time") as string;
   const schoolSlug = (formData.get("school_slug") as string) || "durham";
+  const pricePence = parseInt(formData.get("price_pence") as string) || 15000;
 
   // Validate photographer is approved
   const { data: profile } = await supabase
@@ -86,6 +87,7 @@ export async function createSlot(formData: FormData) {
       slot_date: slotDate,
       start_time: startTime,
       end_time: endTime,
+      price_pence: pricePence,
     })
     .select()
     .single();
@@ -127,8 +129,9 @@ export async function batchCreateSlots(formData: FormData) {
   const startTime = formData.get("start_time") as string;
   const endTime = formData.get("end_time") as string;
   const schoolSlug = (formData.get("school_slug") as string) || "durham";
+  const pricePence = parseInt(formData.get("price_pence") as string) || 15000;
 
-  const slots = [];
+  const slots: { photographer_id: string; school_slug: string; slot_date: string; start_time: string; end_time: string; price_pence: number }[] = [];
   const current = new Date(startDate);
   const end = new Date(endDate);
 
@@ -139,6 +142,7 @@ export async function batchCreateSlots(formData: FormData) {
       slot_date: current.toISOString().split("T")[0],
       start_time: startTime,
       end_time: endTime,
+      price_pence: pricePence,
     });
     current.setDate(current.getDate() + 1);
   }

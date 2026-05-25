@@ -3,7 +3,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { generateOrderNo, generatePaymentRef } from "@/lib/utils";
 
-export async function bookSlot(slotId: string, photographerId: string, pricePence: number) {
+export async function bookSlot(slotId: string, photographerId: string) {
   const supabase = await createSupabaseServer();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -34,12 +34,15 @@ export async function bookSlot(slotId: string, photographerId: string, pricePenc
     })
     .eq("id", slotId)
     .eq("status", "AVAILABLE")
-    .select()
+    .select("*, price_pence")
     .single();
 
   if (slotError || !slot) {
     throw new Error("Slot is no longer available. It may have been booked by another student.");
   }
+
+  // Use the price from the slot record (set by photographer)
+  const pricePence = slot.price_pence || 15000;
 
   // Create the order with payment_ref and 15% commission
   const orderNo = generateOrderNo();
