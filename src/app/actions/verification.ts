@@ -1,7 +1,7 @@
 "use server";
 
 import { createSupabaseServer, createSupabaseAdmin } from "@/lib/supabase-server";
-import { sendOverdueAlert, sendSuspensionNotice } from "@/lib/resend";
+import { sendOverdueAlert, sendBookingConfirmation, sendCommissionSuspension } from "@/lib/resend";
 import { penceToPounds } from "@/lib/utils";
 
 const COMMISSION_THRESHOLD_PENCE = 3000; // £30.00
@@ -14,7 +14,7 @@ export async function confirmPayment(orderId: string) {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("*")
+    .select("*, availability_slots(*), profiles!user_id(*)")
     .eq("id", orderId)
     .eq("photographer_id", user.id)
     .single();
@@ -47,6 +47,35 @@ export async function confirmPayment(orderId: string) {
     actor_id: user.id,
     note: "Photographer confirmed payment",
   });
+
+  // Send booking confirmation email to student
+  try {
+    const slot = order.availability_slots as { slot_date: string; start_time: string; end_time: string } | null;
+    const student = order.profiles as { full_name: string; email?: string } | null;
+
+    if (student?.email && slot) {
+      const photographerProfile = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", order.photographer_id)
+        .single();
+
+      await sendBookingConfirmation({
+        studentEmail: student.email,
+        studentName: student.full_name,
+        photographerName: photographerProfile.data?.full_name || "摄影师",
+        bookingId: order.order_no,
+        shootDate: slot.slot_date,
+        shootTime: `${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`,
+        meetingPoint: "请与摄影师确认",
+        packageName: "毕业照拍摄",
+        duration: `${Math.round((new Date(`1970-01-01T${slot.end_time}`).getTime() - new Date(`1970-01-01T${slot.start_time}`).getTime()) / 60000)} 分钟`,
+        deliverables: "精修照片",
+      });
+    }
+  } catch (emailError) {
+    console.error("Failed to send booking confirmation email:", emailError);
+  }
 
   return { success: true };
 }
@@ -104,7 +133,7 @@ export async function completeOrder(orderId: string) {
   // Check circuit breaker
   const { data: profile } = await supabase
     .from("profiles")
-    .select("commission_owed_pence")
+    .select("commission_owed_pence, full_name")
     .eq("id", order.photographer_id)
     .single();
 
@@ -115,12 +144,13 @@ export async function completeOrder(orderId: string) {
       .eq("id", order.photographer_id);
 
     try {
-      await sendSuspensionNotice({
-        photographerEmail: `${user.email || "photographer"}@snapgown.placeholder`,
-        debtAmountGBP: penceToPounds(profile.commission_owed_pence ?? 0),
+      await sendCommissionSuspension({
+        photographerEmail: user.email || "photographer@snapgown.placeholder",
+        photographerName: profile.full_name || "摄影师",
+        outstandingCommission: penceToPounds(profile.commission_owed_pence ?? 0),
       });
     } catch {
-      console.error("Failed to send suspension notice");
+      console.error("Failed to send commission suspension email");
     }
   }
 

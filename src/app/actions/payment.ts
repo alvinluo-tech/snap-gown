@@ -10,10 +10,10 @@ export async function uploadPaymentProof(orderId: string, file: File) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (!user || authError) throw new Error("Unauthorized");
 
-  // Get the order
+  // Get the order with slot info
   const { data: order } = await supabase
     .from("orders")
-    .select("*")
+    .select("*, availability_slots!slot_id(slot_date, start_time, end_time, school_slug)")
     .eq("id", orderId)
     .eq("user_id", user.id)
     .single();
@@ -69,13 +69,19 @@ export async function uploadPaymentProof(orderId: string, file: File) {
     .single();
 
   // Send email notification to photographer
+  const slot = order.availability_slots as { slot_date: string; start_time: string; end_time: string; school_slug: string } | null;
+
   try {
     await sendPaymentNotification({
       photographerEmail: `${photographer?.wechat_id || "photographer"}@snapgown.placeholder`,
-      orderNo: order.order_no,
+      photographerName: photographer?.full_name || "摄影师",
       studentName: student?.full_name || "Student",
-      amountGBP: penceToPounds(order.total_amount_pence),
-      amountRMB: penceToRMB(order.total_amount_pence),
+      bookingId: order.order_no,
+      shootDate: slot?.slot_date || "",
+      shootTime: slot ? `${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}` : "",
+      shootLocation: slot?.school_slug || "待定",
+      packageName: "毕业照拍摄",
+      amountCNY: penceToRMB(order.total_amount_pence),
     });
   } catch {
     // Email failure shouldn't block the flow

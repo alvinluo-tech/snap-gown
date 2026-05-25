@@ -15,10 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Camera, Clock, ArrowLeft, QrCode } from "lucide-react";
+import { Camera, Clock, ArrowLeft, QrCode, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import COPY from "@/lib/constants/copy";
+import COPY, { DISCLAIMER_CN, DISCLAIMER_EN } from "@/lib/constants/copy";
 
 interface CheckoutProps {
   order: {
@@ -51,6 +51,8 @@ export function CheckoutClient({
 }: CheckoutProps) {
   const router = useRouter();
   const [cancelling, setCancelling] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   const handleUpload = async (file: File) => {
     await uploadPaymentProof(order.id, file);
@@ -207,6 +209,73 @@ export function CheckoutClient({
               </CardContent>
             </Card>
 
+            {/* Legal Disclaimer */}
+            <Card className="mb-6 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  平台免责声明
+                </CardTitle>
+                <CardDescription>
+                  请在支付前阅读并同意以下条款
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="max-h-48 overflow-y-auto border rounded-lg p-4 text-sm text-muted-foreground bg-muted/30">
+                  <div className="whitespace-pre-wrap text-xs leading-relaxed">
+                    {DISCLAIMER_CN.split('\n').slice(0, 30).join('\n')}...
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDisclaimer(true)}
+                    className="text-primary hover:underline text-xs mt-2 inline-flex items-center gap-1"
+                  >
+                    查看完整条款 <ExternalLink className="h-3 w-3" />
+                  </button>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="disclaimer"
+                    checked={disclaimerAccepted}
+                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-primary"
+                  />
+                  <label htmlFor="disclaimer" className="text-sm leading-relaxed cursor-pointer">
+                    {COPY.LEGAL.DISCLAIMER_CHECKBOX_CN}
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Disclaimer Modal */}
+            {showDisclaimer && (
+              <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+                <div className="bg-background rounded-lg max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="font-semibold">平台免责声明及预约须知</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDisclaimer(false)}
+                    >
+                      关闭
+                    </Button>
+                  </div>
+                  <div className="overflow-y-auto p-6">
+                    <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                      {DISCLAIMER_CN}
+                    </div>
+                    <Separator className="my-6" />
+                    <div className="prose prose-sm max-w-none whitespace-pre-wrap text-muted-foreground">
+                      {DISCLAIMER_EN}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Proof Upload */}
             <Card className="mb-6">
               <CardHeader>
@@ -218,7 +287,7 @@ export function CheckoutClient({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ProofUploader onUpload={handleUpload} />
+                <ProofUploader onUpload={handleUpload} disabled={!disclaimerAccepted} />
               </CardContent>
             </Card>
 

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { checkEmailExists } from "@/app/actions/auth-check";
-import COPY from "@/lib/constants/copy";
+import COPY, { REGISTRATION_TERMS } from "@/lib/constants/copy";
 import {
   Camera,
   GraduationCap,
@@ -33,6 +33,8 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 
 type View = "auth" | "forgot" | "forgot-success" | "verify-email";
@@ -71,6 +73,8 @@ function AuthContent() {
   const [regSlug, setRegSlug] = useState("");
   const [regRole, setRegRole] = useState<"STUDENT" | "PHOTOGRAPHER" | "">("");
   const [showRegPassword, setShowRegPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   // Password strength
   function getPasswordStrength(pw: string) {
@@ -184,6 +188,8 @@ function AuthContent() {
     setRegWechat("");
     setRegPhone("");
     setRegSlug("");
+    setTermsAccepted(false);
+    setShowTerms(false);
   }
 
   const regStep1Valid = regRole && regName.trim() && regEmail.trim();
@@ -590,7 +596,58 @@ function AuthContent() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={loading || !regStep2Valid}>
+                    {/* Registration Terms */}
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">注册条款</span>
+                      </div>
+                      <div className="max-h-32 overflow-y-auto border rounded p-3 text-xs text-muted-foreground bg-muted/30">
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {REGISTRATION_TERMS.split('\n').slice(0, 20).join('\n')}...
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowTerms(true)}
+                          className="text-primary hover:underline text-xs mt-2 inline-flex items-center gap-1"
+                        >
+                          查看完整条款 <ExternalLink className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          id="reg-terms"
+                          checked={termsAccepted}
+                          onChange={(e) => setTermsAccepted(e.target.checked)}
+                          className="mt-1 h-4 w-4 rounded border-primary"
+                        />
+                        <label htmlFor="reg-terms" className="text-sm leading-relaxed cursor-pointer">
+                          我已阅读并同意《SnapGown 用户注册条款》，包括账户安全、佣金规则、隐私授权及平台服务条款
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Terms Modal */}
+                    {showTerms && (
+                      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+                        <div className="bg-background rounded-lg max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+                          <div className="flex items-center justify-between p-4 border-b">
+                            <h3 className="font-semibold">SnapGown 用户注册条款</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setShowTerms(false)}>
+                              关闭
+                            </Button>
+                          </div>
+                          <div className="overflow-y-auto p-6">
+                            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                              {REGISTRATION_TERMS}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button type="submit" className="w-full" disabled={loading || !regStep2Valid || !termsAccepted}>
                       {loading ? COPY.AUTH.CREATING_ACCOUNT : COPY.AUTH.CREATE_ACCOUNT}
                     </Button>
                   </div>
