@@ -32,7 +32,7 @@ export default async function HomePage() {
   // Fetch approved photographers
   const { data: photographers } = await supabase
     .from("profiles")
-    .select("id, full_name, bio, gowns_json, account_status")
+    .select("id, slug, full_name, bio, gowns_json, account_status")
     .eq("role", "PHOTOGRAPHER")
     .eq("approval_status", "APPROVED")
     .eq("account_status", "ACTIVE")
@@ -122,7 +122,7 @@ export default async function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photographers.map((p) => (
-              <Link key={p.id} href={`/photographers/${p.id}`}>
+              <Link key={p.id} href={`/photographers/${p.slug || p.id}`}>
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                   <CardHeader>
                     <div className="flex items-center justify-between">

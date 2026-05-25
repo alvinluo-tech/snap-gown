@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       availability_slots: {
@@ -244,6 +269,7 @@ export type Database = {
           gowns_json: Json | null
           id: string
           role: Database["public"]["Enums"]["user_role"]
+          slug: string | null
           uk_phone: string | null
           updated_at: string | null
           wechat_id: string
@@ -260,6 +286,7 @@ export type Database = {
           gowns_json?: Json | null
           id: string
           role?: Database["public"]["Enums"]["user_role"]
+          slug?: string | null
           uk_phone?: string | null
           updated_at?: string | null
           wechat_id: string
@@ -276,6 +303,7 @@ export type Database = {
           gowns_json?: Json | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          slug?: string | null
           uk_phone?: string | null
           updated_at?: string | null
           wechat_id?: string
@@ -440,6 +468,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       account_status: ["ACTIVE", "SUSPENDED"],

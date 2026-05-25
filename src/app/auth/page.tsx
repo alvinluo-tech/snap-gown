@@ -67,6 +67,7 @@ function AuthContent() {
   const [regName, setRegName] = useState("");
   const [regWechat, setRegWechat] = useState("");
   const [regPhone, setRegPhone] = useState("");
+  const [regSlug, setRegSlug] = useState("");
   const [regRole, setRegRole] = useState<"STUDENT" | "PHOTOGRAPHER" | "">("");
   const [showRegPassword, setShowRegPassword] = useState(false);
 
@@ -133,6 +134,7 @@ function AuthContent() {
           wechat_id: regWechat,
           uk_phone: regPhone || "",
           role: regRole,
+          slug: regSlug || "",
         },
       },
     });
@@ -180,6 +182,7 @@ function AuthContent() {
     setRegConfirmPassword("");
     setRegWechat("");
     setRegPhone("");
+    setRegSlug("");
   }
 
   const regStep1Valid = regRole && regName.trim() && regEmail.trim();
@@ -528,6 +531,27 @@ function AuthContent() {
                         Used for payment communication with {regRole === "STUDENT" ? "photographers" : "students"}
                       </p>
                     </div>
+                    {regRole === "PHOTOGRAPHER" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="reg-slug">Custom Profile URL</Label>
+                        <div className="flex items-center gap-0">
+                          <span className="inline-flex items-center px-3 h-10 rounded-l-md border border-r-0 bg-muted text-sm text-muted-foreground">
+                            /photographers/
+                          </span>
+                          <Input
+                            id="reg-slug"
+                            placeholder="alvin"
+                            value={regSlug}
+                            onChange={(e) => setRegSlug(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toLowerCase())}
+                            className="rounded-l-none"
+                            maxLength={30}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Your shareable profile link. English letters and numbers only.
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="reg-phone">UK Phone (optional)</Label>
                       <Input

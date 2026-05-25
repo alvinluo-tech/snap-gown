@@ -4,16 +4,16 @@ import { PhotographerBookingClient } from "./PhotographerBookingClient";
 import { notFound } from "next/navigation";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function PhotographerPage({ params }: PageProps) {
-  const { id } = await params;
+  const { slug } = await params;
 
   const { data: photographer } = await supabase
     .from("profiles")
-    .select("id, full_name, bio, gowns_json, wechat_qr_url, account_status, approval_status")
-    .eq("id", id)
+    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status")
+    .eq("slug", slug)
     .eq("role", "PHOTOGRAPHER")
     .single();
 
@@ -21,10 +21,9 @@ export default async function PhotographerPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch available slots for this photographer
   const slots = await getAvailableSlots("durham", "");
   const photographerSlots = (slots || []).filter(
-    (s) => s.photographer_id === id
+    (s) => s.photographer_id === photographer.id
   );
 
   return (
