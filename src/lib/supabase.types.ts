@@ -179,7 +179,9 @@ export type Database = {
           slot_id: string
           status: Database["public"]["Enums"]["order_status"]
           total_amount_pence: number
+          updated_at: string | null
           user_id: string
+          verification_overdue_at: string | null
         }
         Insert: {
           commission_rate_pct?: number
@@ -195,7 +197,9 @@ export type Database = {
           slot_id: string
           status?: Database["public"]["Enums"]["order_status"]
           total_amount_pence: number
+          updated_at?: string | null
           user_id: string
+          verification_overdue_at?: string | null
         }
         Update: {
           commission_rate_pct?: number
@@ -211,7 +215,9 @@ export type Database = {
           slot_id?: string
           status?: Database["public"]["Enums"]["order_status"]
           total_amount_pence?: number
+          updated_at?: string | null
           user_id?: string
+          verification_overdue_at?: string | null
         }
         Relationships: [
           {
@@ -304,6 +310,16 @@ export type Database = {
       admin_reject_order: {
         Args: { admin_id: string; reason?: string; target_order_id: string }
         Returns: undefined
+      }
+      hold_slot_for_payment: {
+        Args: { p_payment_ref: string; p_order_no: string; p_slot_id: string }
+        Returns: {
+          hold_expires_at: string
+          order_id: string
+          order_status: Database["public"]["Enums"]["order_status"]
+          slot_id: string
+          slot_status: Database["public"]["Enums"]["slot_status"]
+        }[]
       }
       increment_commission_owed: {
         Args: { amount_pence: number; target_photographer_id: string }

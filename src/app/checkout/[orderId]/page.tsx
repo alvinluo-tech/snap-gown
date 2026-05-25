@@ -1,45 +1,42 @@
-import { createSupabaseServer } from "@/lib/supabase-server";
-import { penceToPounds, penceToRMB } from "@/lib/utils";
-import { CheckoutClient } from "./CheckoutClient";
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
+import { createSupabaseServer } from '@/lib/supabase-server';
+import { CheckoutClient } from './CheckoutClient';
+import COPY from '@/lib/constants/copy';
 
-interface PageProps {
+interface CheckoutPageProps {
   params: Promise<{ orderId: string }>;
 }
 
-export default async function CheckoutPage({ params }: PageProps) {
+export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const { orderId } = await params;
   const supabase = await createSupabaseServer();
 
   const { data: order } = await supabase
-    .from("orders")
-    .select(
-      "*, availability_slots(slot_date, start_time, end_time), profiles!photographer_id(full_name, wechat_qr_url)"
-    )
-    .eq("id", orderId)
+    .from('orders')
+    .select(`*, availability_slots(*), profiles!orders_photographer_id_fkey(full_name, wechat_id, wechat_qr_url)`)
+    .eq('id', orderId)
     .single();
 
   if (!order) notFound();
 
-  const photographer = order.profiles as unknown as {
-    full_name: string;
-    wechat_qr_url: string | null;
-  };
+  const amountGBP = (order.total_amount_pence / 100).toFixed(2);
+  const amountCNY = ((order.total_amount_pence * 9.30) / 100).toFixed(2);
 
   return (
-    <CheckoutClient
-      order={{
-        id: order.id,
-        order_no: order.order_no,
-        payment_ref: order.payment_ref,
-        status: order.status,
-        total_amount_pence: order.total_amount_pence,
-        payment_proof_url: order.payment_proof_url,
-      }}
-      photographer={photographer}
-      slot={order.availability_slots as unknown as { slot_date: string; start_time: string; end_time: string }}
-      amountGBP={penceToPounds(order.total_amount_pence)}
-      amountRMB={penceToRMB(order.total_amount_pence)}
-    />
+    <main className="container max-w-2xl py-10 space-y-8">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">{COPY.BRAND.NAME} 收银台</h1>
+        <p className="text-muted-foreground">订单号：{order.order_no}</p>
+      </div>
+
+      <CheckoutClient
+        orderId={orderId}
+        amountCNY={amountCNY}
+        amountGBP={amountGBP}
+        paymentRef={order.payment_ref}
+        photographerQR={order.profiles.wechat_qr_url}
+        photographerName={order.profiles.full_name}
+      />
+    </main>
   );
 }
