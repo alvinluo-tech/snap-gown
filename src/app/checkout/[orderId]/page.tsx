@@ -27,7 +27,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const amountCNY = penceToRMB(order.total_amount_pence);
 
   return (
-    <main className="container max-w-2xl py-10 space-y-8">
+    <main className="max-w-5xl mx-auto py-10 space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">{COPY.BRAND.NAME} 收银台</h1>
         <p className="text-muted-foreground">订单号：{order.order_no}</p>
