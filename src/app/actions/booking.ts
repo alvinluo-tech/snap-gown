@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase-server";
+import { createSupabaseServer, createSupabaseAdmin } from "@/lib/supabase-server";
 import { generateOrderNo, generatePaymentRef } from "@/lib/utils";
 
 export async function bookSlot(slotId: string, photographerId: string) {
@@ -68,13 +68,15 @@ export async function cancelBooking(orderId: string) {
     throw new Error("Can only cancel pending payment orders");
   }
 
-  // Cancel order and release slot
+  // Cancel order (using user client for RLS ownership check)
   await supabase
     .from("orders")
     .update({ status: "CANCELLED" })
     .eq("id", orderId);
 
-  await supabase
+  // Release slot using admin client (bypasses RLS - student isn't the slot owner)
+  const admin = createSupabaseAdmin();
+  await admin
     .from("availability_slots")
     .update({ status: "AVAILABLE", hold_expires_at: null })
     .eq("id", order.slot_id);
