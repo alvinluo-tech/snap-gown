@@ -26,6 +26,8 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const amountGBP = penceToPounds(order.total_amount_pence);
   const amountCNY = penceToRMB(order.total_amount_pence);
 
+  const slot = order.availability_slots as { hold_expires_at?: string } | null;
+
   return (
     <main className="max-w-5xl mx-auto py-10 space-y-8">
       <div className="text-center space-y-2">
@@ -40,6 +42,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         paymentRef={order.payment_ref}
         photographerQR={order.profiles.wechat_qr_url}
         photographerName={order.profiles.full_name}
+        expiresAt={slot?.hold_expires_at ?? null}
       />
     </main>
   );

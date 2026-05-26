@@ -42,7 +42,7 @@ export default async function StudentDashboard() {
   const { data: orders } = await supabase
     .from("orders")
     .select(
-      "*, availability_slots(slot_date, start_time, end_time, school_slug), profiles!photographer_id(full_name, wechat_id)"
+      "*, availability_slots(slot_date, start_time, end_time, school_slug, hold_expires_at), profiles!photographer_id(full_name, wechat_id)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -164,6 +164,7 @@ export default async function StudentDashboard() {
                         slot_date: string;
                         start_time: string;
                         end_time: string;
+                        hold_expires_at: string | null;
                       };
                       const photographer = order.profiles as unknown as {
                         full_name: string;
@@ -215,13 +216,33 @@ export default async function StudentDashboard() {
                             </Badge>
                           </TableCell>
                           <TableCell className="pr-8">
-                            {order.status === "PENDING_PAYMENT" && (
-                              <Link href={`/checkout/${order.id}`}>
-                                <Button size="sm" className="tactile-btn text-xs font-semibold bg-brand text-brand-foreground hover:bg-brand/90 shadow-sm shadow-brand/10">
-                                  {COPY.STUDENT.PAY_NOW}
-                                </Button>
-                              </Link>
-                            )}
+                            {order.status === "PENDING_PAYMENT" && (() => {
+                              const expired = slot?.hold_expires_at
+                                ? new Date(slot.hold_expires_at).getTime() <= Date.now()
+                                : false;
+                              if (expired) {
+                                return (
+                                  <span className="text-xs text-destructive font-semibold">已过期</span>
+                                );
+                              }
+                              const remaining = slot?.hold_expires_at
+                                ? Math.max(0, Math.floor((new Date(slot.hold_expires_at).getTime() - Date.now()) / 1000))
+                                : null;
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <Link href={`/checkout/${order.id}`}>
+                                    <Button size="sm" className="tactile-btn text-xs font-semibold bg-brand text-brand-foreground hover:bg-brand/90 shadow-sm shadow-brand/10">
+                                      {COPY.STUDENT.PAY_NOW}
+                                    </Button>
+                                  </Link>
+                                  {remaining !== null && (
+                                    <span className="text-[10px] font-mono text-muted-foreground">
+                                      {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </TableCell>
                         </TableRow>
                       );
