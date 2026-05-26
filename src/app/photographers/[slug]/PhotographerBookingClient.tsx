@@ -19,7 +19,21 @@ import { penceToPounds } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import COPY from "@/lib/constants/copy";
-import { PortfolioCard } from "@/components/PortfolioCard";
+import { PortfolioShowcase } from "@/components/PortfolioShowcase";
+
+export function parsePortfolio(json: unknown): string[] {
+  if (!json) return [];
+  if (Array.isArray(json)) return json as string[];
+  if (typeof json === "string") {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) return parsed as string[];
+    } catch {
+      // Ignore
+    }
+  }
+  return [];
+}
 
 interface Photographer {
   id: string;
@@ -173,29 +187,6 @@ export function PhotographerBookingClient({
           </CardContent>
         </Card>
 
-        {/* Portfolio Showcase Card */}
-        {Array.isArray(photographer.portfolio_json) && photographer.portfolio_json.length > 0 && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
-              <h2 className="text-2xl font-serif italic font-bold text-primary tracking-tight">
-                作品展示 (Portfolio Showcase)
-              </h2>
-              <Badge variant="outline" className="bg-brand/5 border-brand/20 text-brand text-[10px] px-2 py-0">
-                {photographer.portfolio_json.length} 张精选
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {photographer.portfolio_json.map((url: string, index: number) => (
-                <PortfolioCard
-                  key={index}
-                  src={url}
-                  alt={`${photographer.full_name}的作品展示 ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Booking Calendar Overhaul */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 border-b border-border/40 pb-4">
@@ -222,6 +213,12 @@ export function PhotographerBookingClient({
             />
           </div>
         </div>
+
+        {/* Portfolio Showcase Section */}
+        <PortfolioShowcase
+          portfolio={parsePortfolio(photographer.portfolio_json)}
+          photographerName={photographer.full_name}
+        />
       </div>
     </div>
   );

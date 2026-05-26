@@ -30,7 +30,13 @@ interface Slot {
   price_pence?: number;
 }
 
-export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
+export function PhotographerSlotsClient({
+  slots,
+  defaultPricePounds,
+}: {
+  slots: Slot[];
+  defaultPricePounds?: number;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -38,14 +44,18 @@ export function PhotographerSlotsClient({ slots }: { slots: Slot[] }) {
   const [slotDate, setSlotDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [pricePounds, setPricePounds] = useState("150.00");
+  const [pricePounds, setPricePounds] = useState(
+    defaultPricePounds ? defaultPricePounds.toFixed(2) : "150.00"
+  );
 
   // Batch form
   const [batchStart, setBatchStart] = useState("");
   const [batchEnd, setBatchEnd] = useState("");
   const [batchStartTime, setBatchStartTime] = useState("");
   const [batchEndTime, setBatchEndTime] = useState("");
-  const [batchPricePounds, setBatchPricePounds] = useState("150.00");
+  const [batchPricePounds, setBatchPricePounds] = useState(
+    defaultPricePounds ? defaultPricePounds.toFixed(2) : "150.00"
+  );
 
   const handleCreateSingle = async (e: React.FormEvent) => {
     e.preventDefault();

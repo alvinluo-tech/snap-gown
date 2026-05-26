@@ -15,6 +15,9 @@ import {
   Plus,
   Trash2,
   ExternalLink,
+  Settings2,
+  DollarSign,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import COPY from "@/lib/constants/copy";
@@ -23,7 +26,10 @@ import {
   uploadAvatar, 
   uploadWeChatQR,
   uploadPortfolioImage,
-  deletePortfolioImage
+  deletePortfolioImage,
+  savePortfolio,
+  saveSettings,
+  type PhotographerSettings
 } from "@/app/actions/profile";
 
 export interface Profile {
@@ -37,6 +43,7 @@ export interface Profile {
   wechat_qr_url: string | null;
   gowns_json: unknown;
   portfolio_json?: unknown;
+  settings_json?: unknown;
   slug: string | null;
 }
 
@@ -59,6 +66,15 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
   const [portfolio, setPortfolio] = useState<string[]>(
     (profile.portfolio_json as string[] | null) || []
   );
+
+  // Business settings (photographer-only)
+  const rawSettings = (profile.settings_json as PhotographerSettings | null) || {};
+  const [defaultPrice, setDefaultPrice] = useState(
+    rawSettings.default_price_pounds?.toString() || ""
+  );
+  const [cameraModel, setCameraModel] = useState(rawSettings.camera_model || "");
+  const [deliveryPromise, setDeliveryPromise] = useState(rawSettings.delivery_promise || "");
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -153,7 +169,12 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
 
     if (successCount > 0) {
       setPortfolio(newUrls);
-      toast.success(`成功上传 ${successCount} 张作品集图片`);
+      try {
+        await savePortfolio(newUrls);
+        toast.success(`成功上传并自动保存了 ${successCount} 张作品图片`);
+      } catch {
+        toast.success(`上传成功 ${successCount} 张图片，请点击“保存”按钮确认`);
+      }
       router.refresh();
     }
     setUploadingPortfolio(false);
@@ -161,14 +182,38 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
   };
 
   const handlePortfolioDelete = async (url: string) => {
+    const newUrls = portfolio.filter((u) => u !== url);
+    setPortfolio(newUrls);
     try {
       await deletePortfolioImage(url);
-      setPortfolio(portfolio.filter((u) => u !== url));
-      toast.success("作品图片已移除");
+      await savePortfolio(newUrls);
+      toast.success("作品图片已删除并自动保存");
     } catch (err) {
-      setPortfolio(portfolio.filter((u) => u !== url));
-      toast.success("作品图片已移除");
+      try {
+        await savePortfolio(newUrls);
+        toast.success("作品图片已删除并自动保存");
+      } catch {
+        toast.success("作品图片已移出，请点击右上角“保存”确认");
+      }
     }
+    router.refresh();
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const settings: PhotographerSettings = {
+        default_price_pounds: defaultPrice ? parseFloat(defaultPrice) : undefined,
+        camera_model: cameraModel || undefined,
+        delivery_promise: deliveryPromise || undefined,
+      };
+      await saveSettings(settings);
+      toast.success("业务设置已保存");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "保存失败");
+    }
+    setSavingSettings(false);
   };
 
   const handleSave = async () => {
@@ -577,6 +622,76 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
                     正在上传作品集...
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Business Settings Card */}
+            <Card className="academic-glass hover-lift border border-border/60 rounded-2xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
+              <CardHeader className="border-b border-border/40 pb-4 bg-muted/20">
+                <CardTitle className="text-lg sm:text-xl font-serif-academic font-bold tracking-tight text-foreground flex items-center gap-2">
+                  <span className="w-1.5 h-5 bg-brand rounded-full inline-block" />
+                  <Settings2 className="h-4 w-4 text-brand" />
+                  业务设置 (Business Settings)
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  设置您的默认定价、使用相机和出片承诺，这些信息将展示在您的公开主页上。
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="default_price" className="text-xs sm:text-sm font-serif-academic font-semibold text-foreground/80 flex items-center gap-1.5">
+                      <DollarSign className="h-3.5 w-3.5 text-brand" />
+                      默认时段价格（英镑）
+                    </Label>
+                    <Input
+                      id="default_price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={defaultPrice}
+                      onChange={(e) => setDefaultPrice(e.target.value)}
+                      placeholder="e.g. 150.00"
+                      className="rounded-xl border-border bg-background/50 focus:border-brand focus:ring-brand/30 transition-all font-sans text-sm sm:text-base h-11"
+                    />
+                    <p className="text-[10px] text-muted-foreground">创建时段时将自动预填此价格</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="camera_model" className="text-xs sm:text-sm font-serif-academic font-semibold text-foreground/80 flex items-center gap-1.5">
+                      <Camera className="h-3.5 w-3.5 text-brand" />
+                      使用相机 / Camera System
+                    </Label>
+                    <Input
+                      id="camera_model"
+                      value={cameraModel}
+                      onChange={(e) => setCameraModel(e.target.value)}
+                      placeholder="e.g. Sony A7IV · Sigma 85mm Art"
+                      className="rounded-xl border-border bg-background/50 focus:border-brand focus:ring-brand/30 transition-all font-sans text-sm sm:text-base h-11"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="delivery_promise" className="text-xs sm:text-sm font-serif-academic font-semibold text-foreground/80 flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 text-brand" />
+                    出片承诺 / Delivery Promise
+                  </Label>
+                  <Input
+                    id="delivery_promise"
+                    value={deliveryPromise}
+                    onChange={(e) => setDeliveryPromise(e.target.value)}
+                    placeholder="e.g. 精修 40 张 · 7 天内交付"
+                    className="rounded-xl border-border bg-background/50 focus:border-brand focus:ring-brand/30 transition-all font-sans text-sm sm:text-base h-11"
+                  />
+                  <p className="text-[10px] text-muted-foreground">会显示在摄影师主页的详情徽章上</p>
+                </div>
+                <Button
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings}
+                  className="tactile-btn bg-brand hover:bg-brand/90 text-brand-foreground font-serif-academic tracking-wide rounded-xl px-6 py-2 font-semibold shadow-lg hover-glow transition-all"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {savingSettings ? "保存中…" : "保存业务设置"}
+                </Button>
               </CardContent>
             </Card>
 

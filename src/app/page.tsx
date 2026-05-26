@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createSupabaseServer } from "@/lib/supabase-server";
+import { createSupabaseServer, createSupabaseAdmin } from "@/lib/supabase-server";
 import COPY from "@/lib/constants/copy";
 import {
   Card,
@@ -14,6 +14,7 @@ import { Camera, GraduationCap, MapPin, Clock, Shield, ArrowRight, User } from "
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PhotographerListClient } from "@/components/PhotographerListClient";
 
 export const dynamic = "force-dynamic";
 
@@ -37,13 +38,13 @@ export default async function HomePage() {
   // Fetch approved photographers (only for students/guests)
   const { data: photographers } = isPhotographer
     ? { data: null }
-    : await supabase
+    : (await createSupabaseAdmin()
         .from("profiles")
-        .select("id, slug, full_name, bio, gowns_json, account_status, avatar_url")
+        .select("id, slug, full_name, bio, gowns_json, account_status, avatar_url, portfolio_json")
         .eq("role", "PHOTOGRAPHER")
         .eq("approval_status", "APPROVED")
         .eq("account_status", "ACTIVE")
-        .limit(20);
+        .limit(20) as any);
 
   // Fetch photographer's upcoming slots count
   const { data: photographerSlots } = isPhotographer
@@ -376,133 +377,13 @@ export default async function HomePage() {
           {/* Photographers Bento Grid Section */}
           <section id="photographers-section" className="max-w-7xl mx-auto px-6 py-24 relative z-10">
             
-            {/* Header with Section Eyebrow Restraint Alternate Style */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-              <div className="space-y-3">
-                <h2 className="text-3xl md:text-4xl font-serif italic font-bold text-primary tracking-tight">
-                  {COPY.HOME.AVAILABLE_PHOTOGRAPHERS}
-                </h2>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  甄选杜伦本校卓越独立摄影师，量身定制您的毕业季影像档案。
-                </p>
-              </div>
-            </div>
-
             {!photographers || photographers.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-border/60 rounded-2xl bg-card/50">
                 <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" strokeWidth={1} />
                 <p className="text-base text-muted-foreground">{COPY.HOME.NO_PHOTOGRAPHERS}</p>
               </div>
             ) : (
-              /* Bento Grid Structure */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                {/* 1. Bento Visual Intro Tile (Static content for visual diversity) */}
-                <div className="bg-gradient-to-br from-primary to-primary-foreground text-primary-foreground p-8 rounded-3xl flex flex-col justify-between min-h-[320px] shadow-lg relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-brand/5 blur-3xl rounded-full pointer-events-none" />
-                  <div className="space-y-4 relative z-10">
-                    <Badge variant="outline" className="border-brand/40 text-brand bg-brand/10 uppercase tracking-widest text-[9px] px-2.5 py-0.5">
-                      Durham Classic
-                    </Badge>
-                    <h3 className="text-2xl font-serif italic font-bold leading-snug">
-                      寻找属于您的<br />叙事光影
-                    </h3>
-                    <p className="text-xs text-primary-foreground/75 leading-relaxed max-w-[28ch]">
-                      杜伦大教堂的斑驳石墙、帕拉廷图书馆的光影流连，我们优秀的摄影师熟悉这里每一处快门黄金点。
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-brand text-xs font-semibold hover:text-brand-light transition-colors duration-300 relative z-10 pt-6">
-                    <span>即刻挑选摄影师档期</span>
-                    <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-                  </div>
-                </div>
-
-                {/* 2. Photographers Mapped inside the Bento Grid */}
-                {photographers.map((p, index) => {
-                  // Index-based visual styling variations for anti-slop variety
-                  const isGoldCard = index % 2 === 0;
-                  return (
-                    <Link key={p.id} href={`/photographers/${p.slug || p.id}`} className="group">
-                      <Card className={`hover-lift border border-border/70 cursor-pointer h-full overflow-hidden flex flex-col justify-between rounded-3xl transition-base ${
-                        isGoldCard 
-                          ? 'bg-gradient-to-br from-brand-light/30 via-card to-card' 
-                          : 'bg-card'
-                      }`}>
-                        
-                        <div>
-                          {/* Upper Header Card Portion */}
-                          <div className="p-8 pb-4">
-                            <div className="flex items-center gap-4">
-                              <Avatar size="lg" className="h-16 w-16 border-2 border-brand/20 shadow-sm">
-                                {p.avatar_url ? (
-                                  <AvatarImage src={p.avatar_url} alt={p.full_name} />
-                                ) : null}
-                                <AvatarFallback className="bg-primary/5 text-primary text-lg font-bold">
-                                  {p.full_name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <h3 className="text-xl font-serif italic font-bold text-primary group-hover:text-brand transition-colors duration-300">
-                                  {p.full_name}
-                                </h3>
-                                <Badge variant="secondary" className="mt-1.5 bg-brand/10 text-brand border-brand/20 font-medium">
-                                  {COPY.HOME.PHOTOGRAPHER_BADGE}
-                                </Badge>
-                              </div>
-                            </div>
-                            
-                            {p.bio && (
-                              <p className="text-sm text-muted-foreground/90 line-clamp-3 mt-5 leading-relaxed font-sans">
-                                {p.bio}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Lower Footer Details Portion */}
-                        <div className="p-8 pt-4 border-t border-border/40">
-                          {/* Gown inventory indicators */}
-                          <div className="flex flex-wrap gap-1.5 mb-6">
-                            {Array.isArray(p.gowns_json) && p.gowns_json.length > 0 ? (
-                              (p.gowns_json as { degree?: string; size?: string }[]).slice(0, 3).map((g, i) => (
-                                <Badge key={i} variant="outline" className="border-border/60 text-[10px] text-muted-foreground px-2 py-0">
-                                  🎓 {g.degree} ({g.size})
-                                </Badge>
-                              ))
-                            ) : (
-                              <Badge variant="outline" className="border-border/60 text-[10px] text-muted-foreground px-2 py-0">
-                                🎓 独立自备学士服
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          <Button className="w-full tactile-btn bg-secondary text-secondary-foreground group-hover:bg-brand group-hover:text-brand-foreground transition-colors duration-300">
-                            {COPY.HOME.VIEW_SLOTS_BOOK}
-                          </Button>
-                        </div>
-
-                      </Card>
-                    </Link>
-                  );
-                })}
-
-                {/* 3. Bento Brand Statement Card (Anti-slop filler cell) */}
-                <div className="border border-border/80 bg-card/60 rounded-3xl p-8 flex flex-col justify-between min-h-[320px] text-left">
-                  <div className="space-y-4">
-                    <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center">
-                      <GraduationCap className="h-5 w-5 text-brand" strokeWidth={1.5} />
-                    </div>
-                    <h3 className="text-lg font-serif italic font-bold text-primary">保障与信任边界</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed max-w-[28ch]">
-                      本平台承诺不代收、不托管任何交易资金。学生直接扫描摄影师微信二维码付款，双方享有极高决策自由，并为 Durham Pilot 提供全天候沟通协调协助。
-                    </p>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground/60 border-t border-border/40 pt-4">
-                    Durham Graduation Photoshoot Pilot · 2026
-                  </div>
-                </div>
-
-              </div>
+              <PhotographerListClient initialPhotographers={photographers as any} />
             )}
           </section>
         </>

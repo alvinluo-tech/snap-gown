@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase-server";
+import { createSupabaseServer, createSupabaseAdmin } from "@/lib/supabase-server";
 
 export async function getMyProfile() {
   const supabase = await createSupabaseServer();
@@ -182,15 +182,30 @@ export async function uploadPortfolioImage(file: File) {
   if (!file.type.startsWith("image/")) throw new Error("请上传图片文件");
   if (file.size > 8 * 1024 * 1024) throw new Error("图片大小不能超过 8MB");
 
+  const admin = createSupabaseAdmin();
+
+  // Self-healing: Pre-create storage bucket if it doesn't exist on remote instance
+  try {
+    const { data: bucket } = await admin.storage.getBucket("portfolios");
+    if (!bucket) {
+      await admin.storage.createBucket("portfolios", {
+        public: true,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+      });
+    }
+  } catch {
+    // Ignore error if already created
+  }
+
   const ext = file.name.split(".").pop() || "jpg";
   const fileName = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await admin.storage
     .from("portfolios")
     .upload(fileName, file);
 
   if (uploadError) throw new Error("上传失败: " + uploadError.message);
 
-  const { data: { publicUrl } } = supabase.storage
+  const { data: { publicUrl } } = admin.storage
     .from("portfolios")
     .getPublicUrl(uploadData.path);
 
@@ -208,10 +223,45 @@ export async function deletePortfolioImage(imageUrl: string) {
     const bucketIndex = pathParts.indexOf("portfolios");
     if (bucketIndex !== -1) {
       const oldPath = pathParts.slice(bucketIndex + 1).join("/");
-      await supabase.storage.from("portfolios").remove([oldPath]);
+      const admin = createSupabaseAdmin();
+      await admin.storage.from("portfolios").remove([oldPath]);
     }
     return { success: true };
   } catch {
     throw new Error("无效的图片 URL");
   }
+}
+
+export async function savePortfolio(portfolioUrls: string[]) {
+  const supabase = await createSupabaseServer();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!user || error) throw new Error("Unauthorized");
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ portfolio_json: portfolioUrls } as never)
+    .eq("id", user.id);
+
+  if (updateError) throw new Error(updateError.message);
+  return { success: true };
+}
+
+export interface PhotographerSettings {
+  default_price_pounds?: number;
+  camera_model?: string;
+  delivery_promise?: string;
+}
+
+export async function saveSettings(settings: PhotographerSettings) {
+  const supabase = await createSupabaseServer();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!user || error) throw new Error("Unauthorized");
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ settings_json: settings } as never)
+    .eq("id", user.id);
+
+  if (updateError) throw new Error(updateError.message);
+  return { success: true };
 }

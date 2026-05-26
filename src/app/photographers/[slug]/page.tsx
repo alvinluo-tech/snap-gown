@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { createSupabaseAdmin } from "@/lib/supabase-server";
 import { getAvailableSlots } from "@/app/actions/slots";
 import { PhotographerBookingClient } from "./PhotographerBookingClient";
 import { notFound } from "next/navigation";
@@ -10,12 +10,12 @@ interface PageProps {
 export default async function PhotographerPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const { data: photographer } = await supabase
+  const { data: photographer } = (await createSupabaseAdmin()
     .from("profiles")
-    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status, avatar_url")
+    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status, avatar_url, portfolio_json")
     .eq("slug", slug)
     .eq("role", "PHOTOGRAPHER")
-    .single();
+    .single()) as any;
 
   if (!photographer || photographer.account_status === "SUSPENDED") {
     notFound();
