@@ -12,7 +12,7 @@ export default async function PhotographerPage({ params }: PageProps) {
 
   const { data: photographer } = (await createSupabaseAdmin()
     .from("profiles")
-    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status, avatar_url, portfolio_json")
+    .select("id, full_name, slug, bio, gowns_json, wechat_qr_url, account_status, approval_status, avatar_url, portfolio_json, settings_json")
     .eq("slug", slug)
     .eq("role", "PHOTOGRAPHER")
     .single()) as any;

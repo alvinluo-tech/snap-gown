@@ -44,6 +44,7 @@ interface Photographer {
   account_status: string | null;
   avatar_url: string | null;
   portfolio_json?: unknown;
+  settings_json?: unknown;
 }
 
 interface Slot {
@@ -136,16 +137,32 @@ export function PhotographerBookingClient({
                 </div>
               </div>
 
-              {slots.length > 0 && (
-                <div className="self-center sm:self-start bg-muted/40 rounded-xl px-4 py-2.5 border border-border/60 text-center font-sans">
-                  <span className="text-xs text-muted-foreground block font-medium">拍摄起价</span>
-                  <span className="text-base font-bold text-primary font-mono block mt-0.5">
-                    {COPY.PHOTOGRAPHER_PAGE.FROM_PRICE(
-                      penceToPounds(Math.min(...slots.map((s) => s.price_pence || 15000)))
-                    )}
-                  </span>
-                </div>
-              )}
+              {(() => {
+                const pricedSlots = slots.filter((s) => s.price_pence && s.price_pence > 0);
+                const minPricePence = pricedSlots.length > 0
+                  ? Math.min(...pricedSlots.map((s) => s.price_pence!))
+                  : null;
+                const settingsPrice = (photographer.settings_json as { default_price_pounds?: number } | null)
+                  ?.default_price_pounds;
+                const displayPrice = minPricePence !== null
+                  ? penceToPounds(minPricePence)
+                  : settingsPrice
+                    ? `£${settingsPrice.toFixed(2)}`
+                    : null;
+
+                return (
+                  <div className="self-center sm:self-start bg-muted/40 rounded-xl px-4 py-2.5 border border-border/60 text-center font-sans">
+                    <span className="text-xs text-muted-foreground block font-medium">拍摄起价</span>
+                    <span className="text-base font-bold text-primary font-mono block mt-0.5">
+                      {displayPrice
+                        ? (minPricePence !== null
+                            ? COPY.PHOTOGRAPHER_PAGE.FROM_PRICE(displayPrice)
+                            : `从 ${displayPrice} 起`)
+                        : "--"}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             {photographer.bio && (
@@ -176,13 +193,33 @@ export function PhotographerBookingClient({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-2 text-xs text-muted-foreground font-medium">
+            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-muted-foreground font-medium">
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5">
                 <Clock className="h-3.5 w-3.5 text-brand" strokeWidth={1.5} /> {COPY.PHOTOGRAPHER_PAGE.PAYMENT_VIA_WECHAT}
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5">
                 <GraduationCap className="h-3.5 w-3.5 text-brand" strokeWidth={1.5} /> 杜伦大学官方取景
               </span>
+              {(() => {
+                const s = (photographer.settings_json as {
+                  camera_model?: string;
+                  delivery_promise?: string;
+                } | null) || {};
+                return (
+                  <>
+                    {s.camera_model && (
+                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5">
+                        <Camera className="h-3.5 w-3.5 text-brand" strokeWidth={1.5} /> {s.camera_model}
+                      </span>
+                    )}
+                    {s.delivery_promise && (
+                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        ⏳ {s.delivery_promise}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </CardContent>
         </Card>

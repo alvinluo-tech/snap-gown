@@ -40,7 +40,7 @@ export default async function HomePage() {
     ? { data: null }
     : (await createSupabaseAdmin()
         .from("profiles")
-        .select("id, slug, full_name, bio, gowns_json, account_status, avatar_url, portfolio_json")
+        .select("id, slug, full_name, bio, gowns_json, account_status, avatar_url, portfolio_json, settings_json")
         .eq("role", "PHOTOGRAPHER")
         .eq("approval_status", "APPROVED")
         .eq("account_status", "ACTIVE")

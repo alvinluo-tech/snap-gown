@@ -20,6 +20,7 @@ interface Photographer {
   account_status: string | null;
   avatar_url: string | null;
   portfolio_json: unknown;
+  settings_json?: unknown;
 }
 
 export function parsePortfolio(json: unknown): string[] {
@@ -113,11 +114,17 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
     });
   }, [initialPhotographers, activeFilter]);
 
-  // Helper to dynamically allocate beautiful custom badges per photographer based on their bio
+  // Generate setting badges from real settings_json, fall back to bio-based inference
   const getStyleBadges = (p: Photographer) => {
+    const settings = (p.settings_json as {
+      default_price_pounds?: number;
+      camera_model?: string;
+      delivery_promise?: string;
+    } | null) || {};
     const bio = (p.bio || "").toLowerCase();
     const badges = [];
 
+    // Style tag — derived from bio
     if (bio.includes("教堂") || bio.includes("cathedral") || bio.includes("光影")) {
       badges.push({ text: "✨ 大教堂光影专家", variant: "brand" });
     } else if (bio.includes("城堡") || bio.includes("castle") || bio.includes("外拍")) {
@@ -126,8 +133,15 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
       badges.push({ text: "📐 杜伦Cathedral熟手", variant: "brand" });
     }
 
-    badges.push({ text: "📸 全画幅超清系统", variant: "secondary" });
-    badges.push({ text: "⏳ 48h精修交付", variant: "accent" });
+    // Camera — only show when real data exists
+    if (settings.camera_model) {
+      badges.push({ text: `📸 ${settings.camera_model}`, variant: "secondary" });
+    }
+
+    // Delivery — only show when real data exists
+    if (settings.delivery_promise) {
+      badges.push({ text: `⏳ ${settings.delivery_promise}`, variant: "accent" });
+    }
 
     return badges;
   };
