@@ -74,10 +74,12 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">{COPY.BRAND.NAME}</span>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="p-1.5 rounded-lg bg-brand/10 group-hover:bg-brand/20 transition-colors duration-300">
+              <Camera className="h-5 w-5 text-brand" />
+            </div>
+            <span className="text-xl font-bold tracking-tight">{COPY.BRAND.NAME}</span>
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
@@ -126,17 +128,17 @@ export default async function HomePage() {
       {isPhotographer ? (
         <>
           <section className="max-w-7xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               {COPY.HOME.WELCOME_BACK(profile?.full_name ?? "")}
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               {COPY.HOME.PHOTOGRAPHER_SUBTITLE}
             </p>
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
+            <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-light text-brand-foreground font-medium">
                 <Camera className="h-4 w-4" /> {photographerSlots?.length || 0} {COPY.HOME.ACTIVE_SLOTS}
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary font-medium">
                 <Clock className="h-4 w-4" /> {pendingOrders?.length || 0} {COPY.HOME.PENDING_ORDERS}
               </span>
             </div>
@@ -145,7 +147,7 @@ export default async function HomePage() {
           {/* Photographer Quick Actions */}
           <section className="max-w-7xl mx-auto px-4 pb-16">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover-lift border-l-4 border-l-brand">
                 <CardHeader>
                   <CardTitle>{COPY.HOME.MANAGE_ORDERS}</CardTitle>
                   <CardDescription>
@@ -159,7 +161,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover-lift border-l-4 border-l-brand">
                 <CardHeader>
                   <CardTitle>{COPY.HOME.MANAGE_AVAILABILITY}</CardTitle>
                   <CardDescription>
@@ -179,10 +181,10 @@ export default async function HomePage() {
         <>
           {/* Admin Hero */}
           <section className="max-w-7xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               {COPY.HOME.ADMIN_DASHBOARD}
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               {COPY.HOME.ADMIN_SUBTITLE}
             </p>
           </section>
@@ -190,7 +192,7 @@ export default async function HomePage() {
           {/* Admin Quick Actions */}
           <section className="max-w-7xl mx-auto px-4 pb-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover-lift border-l-4 border-l-brand">
                 <CardHeader>
                   <CardTitle>{COPY.HOME.PHOTOGRAPHERS}</CardTitle>
                   <CardDescription>
@@ -204,7 +206,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover-lift border-l-4 border-l-brand">
                 <CardHeader>
                   <CardTitle>{COPY.HOME.ORDERS}</CardTitle>
                   <CardDescription>
@@ -218,7 +220,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover-lift border-l-4 border-l-brand">
                 <CardHeader>
                   <CardTitle>{COPY.HOME.ADMIN_PANEL}</CardTitle>
                   <CardDescription>
@@ -237,41 +239,46 @@ export default async function HomePage() {
       ) : (
         <>
           {/* Student/Guest Hero */}
-          <section className="max-w-7xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-4xl font-bold mb-4">
-              {COPY.HOME.HERO_TITLE}
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              {COPY.HOME.HERO_SUBTITLE}
-            </p>
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" /> {COPY.HOME.LOCATION}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" /> {COPY.HOME.INSTANT_BOOKING}
-              </span>
-              <span className="flex items-center gap-1">
-                <GraduationCap className="h-4 w-4" /> {COPY.HOME.WECHAT_PAYMENT}
-              </span>
+          <section className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-light via-background to-background" />
+            <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28">
+              <div className="max-w-3xl mx-auto text-center">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1]">
+                  {COPY.HOME.HERO_TITLE}
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+                  {COPY.HOME.HERO_SUBTITLE}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand/10 text-brand font-medium text-sm">
+                    <MapPin className="h-4 w-4" /> {COPY.HOME.LOCATION}
+                  </span>
+                  <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand/10 text-brand font-medium text-sm">
+                    <Clock className="h-4 w-4" /> {COPY.HOME.INSTANT_BOOKING}
+                  </span>
+                  <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand/10 text-brand font-medium text-sm">
+                    <GraduationCap className="h-4 w-4" /> {COPY.HOME.WECHAT_PAYMENT}
+                  </span>
+                </div>
+              </div>
             </div>
           </section>
 
           {/* Photographers Grid */}
-          <section className="max-w-7xl mx-auto px-4 pb-16">
-            <h2 className="text-2xl font-bold mb-6">{COPY.HOME.AVAILABLE_PHOTOGRAPHERS}</h2>
+          <section className="max-w-7xl mx-auto px-4 py-16">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-8">{COPY.HOME.AVAILABLE_PHOTOGRAPHERS}</h2>
             {!photographers || photographers.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Camera className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>{COPY.HOME.NO_PHOTOGRAPHERS}</p>
+              <div className="text-center py-16 text-muted-foreground">
+                <Camera className="h-12 w-12 mx-auto mb-4 opacity-40" />
+                <p className="text-lg">{COPY.HOME.NO_PHOTOGRAPHERS}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {photographers.map((p) => (
                   <Link key={p.id} href={`/photographers/${p.slug || p.id}`}>
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <Card className="hover-lift cursor-pointer h-full group">
                       <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
                             <Avatar size="lg">
                               {p.avatar_url ? (
@@ -279,12 +286,14 @@ export default async function HomePage() {
                               ) : null}
                               <AvatarFallback>{p.full_name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <CardTitle className="text-lg">{p.full_name}</CardTitle>
+                            <div>
+                              <CardTitle className="text-lg group-hover:text-brand transition-colors duration-300">{p.full_name}</CardTitle>
+                              <Badge variant="secondary" className="mt-1 bg-brand/10 text-brand border-brand/20">{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
+                            </div>
                           </div>
-                          <Badge variant="secondary">{COPY.HOME.PHOTOGRAPHER_BADGE}</Badge>
                         </div>
                         {p.bio && (
-                          <CardDescription className="line-clamp-2">
+                          <CardDescription className="line-clamp-2 mt-2">
                             {p.bio}
                           </CardDescription>
                         )}
@@ -294,7 +303,7 @@ export default async function HomePage() {
                           {Array.isArray(p.gowns_json) &&
                             (p.gowns_json as { degree?: string; size?: string }[]).map(
                               (g, i) => (
-                                <Badge key={i} variant="outline">
+                                <Badge key={i} variant="outline" className="border-brand/20 text-brand-foreground/80">
                                   {g.degree} - {g.size}
                                 </Badge>
                               )
