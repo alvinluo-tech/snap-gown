@@ -25,7 +25,12 @@ export async function getAvailableSlots(schoolSlug: string, date: string) {
   const { data, error } = await query;
 
   if (error) throw new Error(error.message);
-  return data;
+
+  // Filter out slots from photographers who are not active (e.g. SUSPENDED)
+  const activeSlots = (data || []).filter(
+    (slot: any) => slot.profiles?.account_status === "ACTIVE"
+  );
+  return activeSlots;
 }
 
 export async function getPhotographerSlots(photographerId: string) {
