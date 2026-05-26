@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, CheckCircle } from "lucide-react";
@@ -17,6 +17,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -39,6 +40,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
       setFile(selectedFile);
       setPreview(URL.createObjectURL(selectedFile));
     }
+  };
+
+  const handleSelectClick = () => {
+    inputRef.current?.click();
   };
 
   const handleSubmit = async () => {
@@ -81,9 +86,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
+          onClick={handleSelectClick}
           className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
-            disabled 
-              ? "opacity-50 cursor-not-allowed border-border" 
+            disabled
+              ? "opacity-50 cursor-not-allowed border-border"
               : "border-border/80 hover:border-brand/60 hover:bg-brand-light/10"
           }`}
         >
@@ -96,18 +102,26 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
           <p className="text-[10px] text-muted-foreground mb-4">
             {COPY.COMPONENTS.OR_CLICK_SELECT}
           </p>
-          <label className={disabled ? "pointer-events-none" : "cursor-pointer"}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-              disabled={disabled}
-            />
-            <Button variant="outline" size="sm" className="tactile-btn text-xs font-semibold" disabled={disabled}>
-              {COPY.COMPONENTS.SELECT_FILE}
-            </Button>
-          </label>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+            disabled={disabled}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="tactile-btn text-xs font-semibold"
+            disabled={disabled}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSelectClick();
+            }}
+          >
+            {COPY.COMPONENTS.SELECT_FILE}
+          </Button>
         </div>
       ) : (
         <div className="relative border border-border/80 rounded-2xl overflow-hidden bg-muted/30 p-2">
