@@ -18,7 +18,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import COPY from "@/lib/constants/copy";
-import { updateProfile, uploadAvatar, uploadWeChatQR } from "@/app/actions/profile";
+import { 
+  updateProfile, 
+  uploadAvatar, 
+  uploadWeChatQR,
+  uploadPortfolioImage,
+  deletePortfolioImage
+} from "@/app/actions/profile";
 
 export interface Profile {
   id: string;
@@ -30,6 +36,7 @@ export interface Profile {
   avatar_url: string | null;
   wechat_qr_url: string | null;
   gowns_json: unknown;
+  portfolio_json?: unknown;
   slug: string | null;
 }
 
@@ -49,13 +56,18 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
   const [gowns, setGowns] = useState<{ degree: string; size: string }[]>(
     (profile.gowns_json as { degree: string; size: string }[] | null) || []
   );
+  const [portfolio, setPortfolio] = useState<string[]>(
+    (profile.portfolio_json as string[] | null) || []
+  );
 
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingQR, setUploadingQR] = useState(false);
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
 
   const isPhotographer = profile.role === "PHOTOGRAPHER";
 
@@ -118,6 +130,47 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
     setGowns(updated);
   };
 
+  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingPortfolio(true);
+    let successCount = 0;
+    const newUrls = [...portfolio];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const result = await uploadPortfolioImage(file);
+        newUrls.push(result.publicUrl);
+        successCount++;
+      } catch (err) {
+        toast.error(
+          `${file.name} 上传失败: ` + (err instanceof Error ? err.message : "未知错误")
+        );
+      }
+    }
+
+    if (successCount > 0) {
+      setPortfolio(newUrls);
+      toast.success(`成功上传 ${successCount} 张作品集图片`);
+      router.refresh();
+    }
+    setUploadingPortfolio(false);
+    if (portfolioInputRef.current) portfolioInputRef.current.value = "";
+  };
+
+  const handlePortfolioDelete = async (url: string) => {
+    try {
+      await deletePortfolioImage(url);
+      setPortfolio(portfolio.filter((u) => u !== url));
+      toast.success("作品图片已移除");
+    } catch (err) {
+      setPortfolio(portfolio.filter((u) => u !== url));
+      toast.success("作品图片已移除");
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -130,6 +183,11 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
         formData.set("gowns_json", JSON.stringify(gowns));
       } else {
         formData.set("gowns_json", "[]");
+      }
+      if (portfolio.length > 0) {
+        formData.set("portfolio_json", JSON.stringify(portfolio));
+      } else {
+        formData.set("portfolio_json", "[]");
       }
       await updateProfile(formData);
       toast.success(COPY.PROFILE.PROFILE_UPDATED);
@@ -441,6 +499,84 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
                   <Plus className="h-4 w-4" />
                   <span className="font-serif-academic font-bold text-xs sm:text-sm">{COPY.PROFILE.ADD_GOWN}</span>
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Portfolio Card */}
+            <Card className="academic-glass hover-lift border border-border/60 rounded-2xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
+              <CardHeader className="border-b border-border/40 pb-4 bg-muted/20">
+                <CardTitle className="text-lg sm:text-xl font-serif-academic font-bold tracking-tight text-foreground flex items-center gap-2">
+                  <span className="w-1.5 h-5 bg-brand rounded-full inline-block" />
+                  作品集展示 (Portfolio Showcase)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <p className="text-xs text-muted-foreground">
+                  上传您的摄影代表作。学生在浏览摄影师主页时会首要看到您的作品集。单张图片限 8MB 内，建议上传高画质原图以保留细节。
+                </p>
+
+                {portfolio.length === 0 ? (
+                  <div
+                    className="border-2 border-dashed border-brand/20 hover:border-brand/60 rounded-2xl p-8 text-center cursor-pointer bg-brand/5 dark:bg-brand/2 hover:bg-brand/10 transition-all duration-300 group"
+                    onClick={() => portfolioInputRef.current?.click()}
+                  >
+                    <Camera className="h-10 w-10 text-brand mx-auto mb-3 transition-transform duration-500 group-hover:rotate-12" />
+                    <p className="text-sm font-serif-academic font-bold text-foreground mb-1">
+                      上传作品集图片 (支持多选)
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      限 JPG, PNG 格式，每张大小不超过 8MB
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {portfolio.map((url, i) => (
+                        <div key={i} className="relative aspect-[3/2] rounded-xl overflow-hidden border bg-muted shadow-sm group">
+                          <img
+                            src={url}
+                            alt={`Portfolio ${i + 1}`}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="tactile-btn rounded-full h-10 w-10 flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300"
+                              onClick={() => handlePortfolioDelete(url)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => portfolioInputRef.current?.click()}
+                      className="tactile-btn w-full rounded-xl border-dashed border-brand/30 hover:border-brand/60 hover:bg-brand/5 text-brand flex items-center justify-center gap-2 h-11 transition-all"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="font-serif-academic font-bold text-xs sm:text-sm">追加作品图片</span>
+                    </Button>
+                  </div>
+                )}
+
+                <input
+                  ref={portfolioInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePortfolioUpload}
+                  className="hidden"
+                />
+                {uploadingPortfolio && (
+                  <div className="flex items-center gap-2 justify-center text-xs text-brand animate-pulse">
+                    <span className="h-1.5 w-1.5 rounded-full bg-brand animate-ping" />
+                    正在上传作品集...
+                  </div>
+                )}
               </CardContent>
             </Card>
 
