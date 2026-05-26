@@ -47,3 +47,4 @@ supabase/.temp/
 docs/
 git-workflow.md
 PRD*.md
+.claude/
