@@ -23,66 +23,29 @@ export async function bookSlot(slotId: string, photographerId: string) {
     throw new Error("Photographer is not available");
   }
 
-  // Try to lock the slot with pessimistic update
-  const holdExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-
-  const { data: slot, error: slotError } = await supabase
-    .from("availability_slots")
-    .update({
-      status: "HELD",
-      hold_expires_at: holdExpiresAt,
-    })
-    .eq("id", slotId)
-    .eq("status", "AVAILABLE")
-    .select("*, price_pence")
-    .single();
-
-  if (slotError || !slot) {
-    throw new Error("Slot is no longer available. It may have been booked by another student.");
-  }
-
-  // Use the price from the slot record (set by photographer)
-  const pricePence = slot.price_pence || 15000;
-
-  // Create the order with payment_ref and 15% commission
+  // Use DB-side pessimistic locking RPC to avoid race conditions.
   const orderNo = generateOrderNo();
   const paymentRef = generatePaymentRef();
-  const commissionRate = 15.0;
-  const platformFeePence = Math.round(pricePence * (commissionRate / 100));
+  const { data: holdResult, error: holdError } = await supabase.rpc("hold_slot_for_payment", {
+    p_slot_id: slotId,
+    p_order_no: orderNo,
+    p_payment_ref: paymentRef,
+  });
 
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .insert({
-      order_no: orderNo,
-      payment_ref: paymentRef,
-      user_id: user.id,
-      photographer_id: photographerId,
-      slot_id: slotId,
-      total_amount_pence: pricePence,
-      commission_rate_pct: commissionRate,
-      platform_fee_pence: platformFeePence,
-      status: "PENDING_PAYMENT",
-    })
-    .select()
-    .single();
-
-  if (orderError) {
-    // Rollback: release the slot
-    await supabase
-      .from("availability_slots")
-      .update({ status: "AVAILABLE", hold_expires_at: null })
-      .eq("id", slotId);
-    throw new Error("Failed to create order: " + orderError.message);
+  if (holdError || !holdResult?.length) {
+    throw new Error(holdError?.message || "Slot is no longer available. It may have been booked by another student.");
   }
 
-  // Log order creation
-  await supabase.from("order_status_logs").insert({
-    order_id: order.id,
-    from_status: null,
-    to_status: "PENDING_PAYMENT",
-    actor_id: user.id,
-    note: "Order created",
-  });
+  const heldOrderId = holdResult[0].order_id;
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", heldOrderId)
+    .single();
+
+  if (orderError || !order) {
+    throw new Error(orderError?.message || "Failed to fetch created order");
+  }
 
   return order;
 }

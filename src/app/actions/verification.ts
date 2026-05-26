@@ -5,6 +5,28 @@ import { sendOverdueAlert, sendBookingConfirmation, sendCommissionSuspension } f
 import { penceToPounds } from "@/lib/utils";
 
 const COMMISSION_THRESHOLD_PENCE = 3000; // £30.00
+const ORDER_STATUSES = [
+  "PENDING_PAYMENT",
+  "PROOF_SUBMITTED",
+  "CONFIRMED",
+  "VERIFICATION_OVERDUE",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
+async function getOrderStatusCounts(
+  supabase: Awaited<ReturnType<typeof createSupabaseServer>>
+) {
+  const stats: Record<string, number> = {};
+  for (const status of ORDER_STATUSES) {
+    const { count } = await supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("status", status);
+    stats[status] = count || 0;
+  }
+  return stats;
+}
 
 export async function confirmPayment(orderId: string) {
   const supabase = await createSupabaseServer();
@@ -346,24 +368,7 @@ export async function getAdminStats() {
 
   if (!profile || profile.role !== "ADMIN") throw new Error("Admin access required");
 
-  // Get counts for each status
-  const statuses = [
-    "PENDING_PAYMENT",
-    "PROOF_SUBMITTED",
-    "CONFIRMED",
-    "VERIFICATION_OVERDUE",
-    "COMPLETED",
-    "CANCELLED",
-  ] as const;
-
-  const stats: Record<string, number> = {};
-  for (const status of statuses) {
-    const { count } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("status", status);
-    stats[status] = count || 0;
-  }
+  const stats = await getOrderStatusCounts(supabase);
 
   // Total commission owed
   const { data: photographers } = await supabase
@@ -485,24 +490,7 @@ export async function adminClearDebt(photographerId: string) {
 export async function getAdminStatsEnhanced() {
   const { supabase } = await verifyAdmin();
 
-  // Get counts for each status
-  const statuses = [
-    "PENDING_PAYMENT",
-    "PROOF_SUBMITTED",
-    "CONFIRMED",
-    "VERIFICATION_OVERDUE",
-    "COMPLETED",
-    "CANCELLED",
-  ] as const;
-
-  const stats: Record<string, number> = {};
-  for (const status of statuses) {
-    const { count } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("status", status);
-    stats[status] = count || 0;
-  }
+  const stats = await getOrderStatusCounts(supabase);
 
   // Total commission owed
   const { data: photographers } = await supabase

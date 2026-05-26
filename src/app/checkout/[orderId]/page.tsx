@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { CheckoutClient } from './CheckoutClient';
 import COPY from '@/lib/constants/copy';
+import { penceToPounds, penceToRMB } from '@/lib/utils';
 
 interface CheckoutPageProps {
   params: Promise<{ orderId: string }>;
@@ -10,6 +11,9 @@ interface CheckoutPageProps {
 export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const { orderId } = await params;
   const supabase = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: order } = await supabase
     .from('orders')
@@ -17,10 +21,10 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     .eq('id', orderId)
     .single();
 
-  if (!order) notFound();
+  if (!order || !user || order.user_id !== user.id) notFound();
 
-  const amountGBP = (order.total_amount_pence / 100).toFixed(2);
-  const amountCNY = ((order.total_amount_pence * 9.30) / 100).toFixed(2);
+  const amountGBP = penceToPounds(order.total_amount_pence);
+  const amountCNY = penceToRMB(order.total_amount_pence);
 
   return (
     <main className="container max-w-2xl py-10 space-y-8">
