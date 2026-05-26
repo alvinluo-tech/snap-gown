@@ -124,12 +124,29 @@ export async function deleteSlot(slotId: string) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (!user || authError) throw new Error("Unauthorized");
 
+  // Check for active orders referencing this slot
+  const { data: activeOrders } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("slot_id", slotId)
+    .not("status", "in", '("CANCELLED","COMPLETED")');
+
+  if (activeOrders && activeOrders.length > 0) {
+    throw new Error("该档期有进行中的订单，无法删除");
+  }
+
+  // Nullify slot_id on terminal orders so FK doesn't block deletion
+  await supabase
+    .from("orders")
+    .update({ slot_id: null })
+    .eq("slot_id", slotId)
+    .in("status", ["CANCELLED", "COMPLETED"]);
+
   const { error } = await supabase
     .from("availability_slots")
     .delete()
     .eq("id", slotId)
-    .eq("photographer_id", user.id)
-    .eq("status", "AVAILABLE");
+    .eq("photographer_id", user.id);
 
   if (error) throw new Error(error.message);
   return { success: true };

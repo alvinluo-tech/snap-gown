@@ -36,11 +36,13 @@ export async function POST(req: NextRequest) {
       .eq("id", orderId);
 
     // Release slot (admin client bypasses RLS - student isn't slot owner)
-    const admin = createSupabaseAdmin();
-    await admin
-      .from("availability_slots")
-      .update({ status: "AVAILABLE", hold_expires_at: null })
-      .eq("id", order.slot_id);
+    if (order.slot_id) {
+      const admin = createSupabaseAdmin();
+      await admin
+        .from("availability_slots")
+        .update({ status: "AVAILABLE", hold_expires_at: null })
+        .eq("id", order.slot_id);
+    }
 
     // Log
     await supabase.from("order_status_logs").insert({

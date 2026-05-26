@@ -56,10 +56,12 @@ export async function confirmPayment(orderId: string) {
 
   if (updateError) throw new Error(updateError.message);
 
-  await supabase
-    .from("availability_slots")
-    .update({ status: "BOOKED" })
-    .eq("id", order.slot_id);
+  if (order.slot_id) {
+    await supabase
+      .from("availability_slots")
+      .update({ status: "BOOKED" })
+      .eq("id", order.slot_id);
+  }
 
   // Log status change
   await supabase.from("order_status_logs").insert({
@@ -208,10 +210,12 @@ export async function rejectPayment(orderId: string, reason: string) {
     .eq("id", orderId);
 
   // Release slot
-  await supabase
-    .from("availability_slots")
-    .update({ status: "AVAILABLE", hold_expires_at: null })
-    .eq("id", order.slot_id);
+  if (order.slot_id) {
+    await supabase
+      .from("availability_slots")
+      .update({ status: "AVAILABLE", hold_expires_at: null })
+      .eq("id", order.slot_id);
+  }
 
   // Log rejection
   await supabase.from("order_status_logs").insert({

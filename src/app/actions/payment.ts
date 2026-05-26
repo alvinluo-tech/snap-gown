@@ -49,10 +49,12 @@ export async function uploadPaymentProof(orderId: string, file: File) {
   if (updateError) throw new Error("Failed to update order: " + updateError.message);
 
   // Clear the hold_expires_at (timer destroyed)
-  await supabase
-    .from("availability_slots")
-    .update({ hold_expires_at: null })
-    .eq("id", order.slot_id);
+  if (order.slot_id) {
+    await supabase
+      .from("availability_slots")
+      .update({ hold_expires_at: null })
+      .eq("id", order.slot_id);
+  }
 
   // Get photographer email for notification
   const { data: photographer } = await supabase

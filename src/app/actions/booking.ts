@@ -75,11 +75,13 @@ export async function cancelBooking(orderId: string) {
     .eq("id", orderId);
 
   // Release slot using admin client (bypasses RLS - student isn't the slot owner)
-  const admin = createSupabaseAdmin();
-  await admin
-    .from("availability_slots")
-    .update({ status: "AVAILABLE", hold_expires_at: null })
-    .eq("id", order.slot_id);
+  if (order.slot_id) {
+    const admin = createSupabaseAdmin();
+    await admin
+      .from("availability_slots")
+      .update({ status: "AVAILABLE", hold_expires_at: null })
+      .eq("id", order.slot_id);
+  }
 
   // Log cancellation
   await supabase.from("order_status_logs").insert({

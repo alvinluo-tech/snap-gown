@@ -176,7 +176,7 @@ export type Database = {
           photographer_id: string
           platform_fee_pence: number
           proof_submitted_at: string | null
-          slot_id: string
+          slot_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount_pence: number
           updated_at: string | null
@@ -194,7 +194,7 @@ export type Database = {
           photographer_id: string
           platform_fee_pence: number
           proof_submitted_at?: string | null
-          slot_id: string
+          slot_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount_pence: number
           updated_at?: string | null
@@ -212,7 +212,7 @@ export type Database = {
           photographer_id?: string
           platform_fee_pence?: number
           proof_submitted_at?: string | null
-          slot_id?: string
+          slot_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount_pence?: number
           updated_at?: string | null
