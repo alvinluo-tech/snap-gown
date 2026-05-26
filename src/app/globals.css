@@ -63,18 +63,18 @@
   --secondary-foreground: oklch(0.16 0.03 250);
   --muted: oklch(0.96 0.01 250);
   --muted-foreground: oklch(0.45 0.02 250);
-  --accent: oklch(0.97 0.02 85); /* Accent tint */
-  --accent-foreground: oklch(0.25 0.04 85);
+  --accent: oklch(0.95 0.04 75); /* Accent tint */
+  --accent-foreground: oklch(0.25 0.02 75);
   --destructive: oklch(0.55 0.20 25);
   --border: oklch(0.90 0.01 250);
   --input: oklch(0.90 0.01 250);
-  --ring: oklch(0.76 0.13 85 / 40%);
+  --ring: oklch(0.72 0.16 75 / 40%);
   
-  /* Brand Gold - champagne luster */
-  --brand: oklch(0.76 0.13 85);
-  --brand-foreground: oklch(0.25 0.04 85);
-  --brand-light: oklch(0.97 0.02 85);
-  --brand-muted: oklch(0.93 0.04 85);
+  /* Brand Gold - warm amber gold */
+  --brand: oklch(0.72 0.16 75);
+  --brand-foreground: oklch(0.25 0.02 75);
+  --brand-light: oklch(0.95 0.04 75);
+  --brand-muted: oklch(0.90 0.06 75);
   
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -88,11 +88,11 @@
   --sidebar-accent: oklch(0.96 0.01 250);
   --sidebar-accent-foreground: oklch(0.16 0.03 250);
   --sidebar-border: oklch(0.90 0.01 250);
-  --sidebar-ring: oklch(0.76 0.13 85 / 40%);
+  --sidebar-ring: oklch(0.72 0.16 75 / 40%);
   
   --font-serif: var(--font-serif);
 }
-
+ 
 .dark {
   --background: oklch(0.10 0.02 250); /* Dark Oxford Velvet Navy-slate */
   --foreground: oklch(0.97 0.01 75); /* Pearl White */
@@ -106,27 +106,28 @@
   --secondary-foreground: oklch(0.97 0.01 75);
   --muted: oklch(0.16 0.02 250);
   --muted-foreground: oklch(0.65 0.01 250);
-  --accent: oklch(0.20 0.03 85);
-  --accent-foreground: oklch(0.78 0.12 85);
+  --accent: oklch(0.25 0.04 75);
+  --accent-foreground: oklch(0.78 0.14 75);
   --destructive: oklch(0.45 0.18 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.78 0.12 85 / 45%);
+  --ring: oklch(0.78 0.14 75 / 45%);
   
-  /* Brand Gold - dark mode optimized */
-  --brand: oklch(0.78 0.12 85);
-  --brand-foreground: oklch(0.15 0.03 85);
-  --brand-light: oklch(0.22 0.04 85);
-  --brand-muted: oklch(0.28 0.04 85);
+  /* Brand Gold - warm amber gold optimized */
+  --brand: oklch(0.78 0.14 75);
+  --brand-foreground: oklch(0.20 0.02 75);
+  --brand-light: oklch(0.25 0.04 75);
+  --brand-muted: oklch(0.30 0.04 75);
   
   --sidebar: oklch(0.11 0.02 250);
   --sidebar-foreground: oklch(0.97 0.01 75);
-  --sidebar-primary: oklch(0.78 0.12 85);
-  --sidebar-primary-foreground: oklch(0.15 0.03 85);
+  --sidebar-primary: oklch(0.78 0.14 75);
+  --sidebar-primary-foreground: oklch(0.20 0.02 75);
   --sidebar-accent: oklch(0.16 0.02 250);
   --sidebar-accent-foreground: oklch(0.97 0.01 75);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.78 0.12 85 / 45%);
+  --sidebar-ring: oklch(0.78 0.14 75 / 45%);
+
 }
 
 @layer base {
@@ -162,7 +163,7 @@
     transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hover-glow:hover {
-    box-shadow: 0 0 25px oklch(0.76 0.13 85 / 15%);
+    box-shadow: 0 0 25px oklch(0.72 0.16 75 / 15%);
   }
   
   /* High-end glassmorphism for academic frames */
