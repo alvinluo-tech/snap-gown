@@ -84,6 +84,18 @@ export async function createSlot(formData: FormData) {
     throw new Error("Account suspended");
   }
 
+  // Check for overlapping slots on the same date
+  const { data: existing } = await supabase
+    .from("availability_slots")
+    .select("start_time, end_time")
+    .eq("photographer_id", user.id)
+    .eq("slot_date", slotDate)
+    .in("status", ["AVAILABLE", "HELD"]);
+
+  if (existing?.some((s) => startTime < s.end_time && s.start_time < endTime)) {
+    throw new Error("该时间段与已有档期重叠");
+  }
+
   const { data, error } = await supabase
     .from("availability_slots")
     .insert({
@@ -136,21 +148,38 @@ export async function batchCreateSlots(formData: FormData) {
   const schoolSlug = (formData.get("school_slug") as string) || "durham";
   const pricePence = parseInt(formData.get("price_pence") as string) || 15000;
 
-  const slots: { photographer_id: string; school_slug: string; slot_date: string; start_time: string; end_time: string; price_pence: number }[] = [];
+  // Collect all dates in the range
+  const dates: string[] = [];
   const current = new Date(startDate);
   const end = new Date(endDate);
-
   while (current <= end) {
-    slots.push({
-      photographer_id: user.id,
-      school_slug: schoolSlug,
-      slot_date: current.toISOString().split("T")[0],
-      start_time: startTime,
-      end_time: endTime,
-      price_pence: pricePence,
-    });
+    dates.push(current.toISOString().split("T")[0]);
     current.setDate(current.getDate() + 1);
   }
+
+  // Check for overlapping slots on any of the dates
+  const { data: existing } = await supabase
+    .from("availability_slots")
+    .select("slot_date, start_time, end_time")
+    .eq("photographer_id", user.id)
+    .in("slot_date", dates)
+    .in("status", ["AVAILABLE", "HELD"]);
+
+  const overlap = existing?.find(
+    (s) => startTime < s.end_time && s.start_time < endTime
+  );
+  if (overlap) {
+    throw new Error(`${overlap.slot_date} 该时间段与已有档期重叠`);
+  }
+
+  const slots = dates.map((date) => ({
+    photographer_id: user.id,
+    school_slug: schoolSlug,
+    slot_date: date,
+    start_time: startTime,
+    end_time: endTime,
+    price_pence: pricePence,
+  }));
 
   const { data, error } = await supabase
     .from("availability_slots")
