@@ -48,3 +48,4 @@ docs/
 git-workflow.md
 PRD*.md
 .claude/
+supabase/check_profiles.js
