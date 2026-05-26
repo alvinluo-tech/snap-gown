@@ -140,192 +140,220 @@ export function PhotographersClient({
     (p) => p.approval_status !== "PENDING"
   );
 
+  const translateApproval = (status: string | null) => {
+    if (status === "APPROVED") return "已批准";
+    if (status === "PENDING") return "待审核";
+    if (status === "REJECTED") return "已拒绝";
+    return status || "";
+  };
+
+  const translateAccount = (status: string | null) => {
+    if (status === "ACTIVE") return "活跃";
+    if (status === "SUSPENDED") return "已暂停";
+    return status || "";
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-8">
+      {/* Title */}
+      <div className="space-y-1.5">
+        <h1 className="text-3xl font-serif italic font-bold text-primary tracking-tight">
+          {COPY.ADMIN.PHOTOGRAPHERS}
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          审核新加入的摄影师申请，并管理已签约摄影师的佣金账单状态
+        </p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
         <Input
           placeholder={COPY.ADMIN.SEARCH_PHOTOGRAPHERS}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
+          className="pl-10.5 rounded-xl border-border/85 bg-card/60 focus:bg-card transition-colors h-10 text-xs"
         />
       </div>
 
-      {/* Pending Approvals */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-warning" />
+      {/* Pending Approvals Card */}
+      <Card className="border border-border/80 rounded-[24px] overflow-hidden shadow-xs bg-card">
+        <CardHeader className="p-6 border-b border-border/40 bg-muted/20">
+          <CardTitle className="text-base font-serif italic font-bold text-primary flex items-center gap-2">
+            <Clock className="h-4.5 w-4.5 text-brand" strokeWidth={1.5} />
             {COPY.ADMIN.PENDING_APPROVAL} ({pendingPhotographers.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {pendingPhotographers.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs p-10 text-center">
               {COPY.ADMIN.NO_PHOTOGRAPHERS_PENDING}
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{COPY.COMMON.NAME}</TableHead>
-                  <TableHead>{COPY.COMMON.WECHAT}</TableHead>
-                  <TableHead>{COPY.COMMON.PHONE}</TableHead>
-                  <TableHead>简介</TableHead>
-                  <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingPhotographers.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.full_name}</TableCell>
-                    <TableCell>{p.wechat_id}</TableCell>
-                    <TableCell>{p.uk_phone || "-"}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {p.bio || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleApproval(p.id, "APPROVED")}
-                          disabled={loading}
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          {COPY.ADMIN.APPROVE}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleApproval(p.id, "REJECTED")}
-                          disabled={loading}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          {COPY.ADMIN.REJECT}
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="font-serif italic font-bold text-primary pl-8">{COPY.COMMON.NAME}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.COMMON.WECHAT}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.COMMON.PHONE}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">个人简介</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary pr-8">{COPY.COMMON.ACTIONS}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pendingPhotographers.map((p) => (
+                    <TableRow key={p.id} className="hover:bg-muted/10 transition-colors">
+                      <TableCell className="font-semibold text-xs text-primary pl-8">{p.full_name}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">{p.wechat_id}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">{p.uk_phone || "-"}</TableCell>
+                      <TableCell className="max-w-[220px] truncate text-xs text-muted-foreground">
+                        {p.bio || "-"}
+                      </TableCell>
+                      <TableCell className="pr-8">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="tactile-btn text-xs font-semibold bg-brand text-brand-foreground hover:bg-brand/90"
+                            onClick={() => handleApproval(p.id, "APPROVED")}
+                            disabled={loading}
+                          >
+                            <Check className="h-3.5 w-3.5 mr-1" strokeWidth={2} />
+                            {COPY.ADMIN.APPROVE}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="tactile-btn text-xs font-semibold bg-destructive hover:bg-destructive/90"
+                            onClick={() => handleApproval(p.id, "REJECTED")}
+                            disabled={loading}
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-1" strokeWidth={1.5} />
+                            {COPY.ADMIN.REJECT}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* All Photographers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{COPY.ADMIN.ALL_PHOTOGRAPHERS}</CardTitle>
+      {/* All Photographers Card */}
+      <Card className="border border-border/80 rounded-[24px] overflow-hidden shadow-xs bg-card">
+        <CardHeader className="p-6 border-b border-border/40 bg-muted/20">
+          <CardTitle className="text-base font-serif italic font-bold text-primary">
+            {COPY.ADMIN.ALL_PHOTOGRAPHERS} ({otherPhotographers.length})
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {otherPhotographers.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs p-10 text-center">
               {search
                 ? COPY.ADMIN.NO_PHOTOGRAPHERS_MATCH
                 : COPY.ADMIN.NO_PHOTOGRAPHERS_REGISTERED}
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{COPY.COMMON.NAME}</TableHead>
-                  <TableHead>{COPY.COMMON.WECHAT}</TableHead>
-                  <TableHead>{COPY.ADMIN.APPROVAL}</TableHead>
-                  <TableHead>{COPY.ADMIN.ACCOUNT}</TableHead>
-                  <TableHead>{COPY.ADMIN.DEBT}</TableHead>
-                  <TableHead>{COPY.COMMON.ACTIONS}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {otherPhotographers.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.full_name}</TableCell>
-                    <TableCell>{p.wechat_id}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          p.approval_status === "APPROVED"
-                            ? "default"
-                            : "destructive"
-                        }
-                      >
-                        {p.approval_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          p.account_status === "ACTIVE"
-                            ? "default"
-                            : "destructive"
-                        }
-                      >
-                        {p.account_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      £{penceToPounds(p.commission_owed_pence)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleToggleSuspension(p.id, p.account_status)
-                          }
-                          disabled={loading}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="font-serif italic font-bold text-primary pl-8">{COPY.COMMON.NAME}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.COMMON.WECHAT}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.ADMIN.APPROVAL}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.ADMIN.ACCOUNT}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary">{COPY.ADMIN.DEBT}</TableHead>
+                    <TableHead className="font-serif italic font-bold text-primary pr-8">{COPY.COMMON.ACTIONS}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {otherPhotographers.map((p) => (
+                    <TableRow key={p.id} className="hover:bg-muted/10 transition-colors">
+                      <TableCell className="font-semibold text-xs text-primary pl-8">{p.full_name}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">{p.wechat_id}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className="text-[9px] font-semibold tracking-wider rounded-md uppercase"
+                          variant={p.approval_status === "APPROVED" ? "default" : "destructive"}
                         >
-                          {p.account_status === "SUSPENDED" ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              {COPY.ADMIN.UNSUSPEND}
-                            </>
-                          ) : (
-                            <>
-                              <Ban className="h-4 w-4 mr-1" />
-                              {COPY.ADMIN.SUSPEND}
-                            </>
-                          )}
-                        </Button>
-                        {p.commission_owed_pence > 0 && (
+                          {translateApproval(p.approval_status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className="text-[9px] font-semibold tracking-wider rounded-md uppercase"
+                          variant={p.account_status === "ACTIVE" ? "default" : "destructive"}
+                        >
+                          {translateAccount(p.account_status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs font-bold text-primary">
+                        £{penceToPounds(p.commission_owed_pence)}
+                      </TableCell>
+                      <TableCell className="pr-8">
+                        <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleClearDebt(p.id)}
+                            className="tactile-btn text-xs font-semibold h-8 border-border/80 hover:bg-muted"
+                            onClick={() =>
+                              handleToggleSuspension(p.id, p.account_status)
+                            }
                             disabled={loading}
                           >
-                            {COPY.ADMIN.CLEAR_DEBT}
+                            {p.account_status === "SUSPENDED" ? (
+                              <>
+                                <CheckCircle className="h-3.5 w-3.5 mr-1 text-brand" strokeWidth={1.5} />
+                                {COPY.ADMIN.UNSUSPEND}
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="h-3.5 w-3.5 mr-1 text-destructive" strokeWidth={1.5} />
+                                {COPY.ADMIN.SUSPEND}
+                              </>
+                            )}
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          {p.commission_owed_pence > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="tactile-btn text-xs font-semibold h-8 border-brand/20 text-brand hover:bg-brand/5"
+                              onClick={() => handleClearDebt(p.id)}
+                              disabled={loading}
+                            >
+                              {COPY.ADMIN.CLEAR_DEBT}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog Overhaul */}
       <Dialog
         open={confirmDialog.open}
         onOpenChange={(open) =>
           setConfirmDialog((prev) => ({ ...prev, open }))
         }
       >
-        <DialogContent>
+        <DialogContent className="rounded-2xl border border-border/80 shadow-2xl">
           <DialogHeader>
-            <DialogTitle>{confirmDialog.title}</DialogTitle>
-            <DialogDescription>{confirmDialog.description}</DialogDescription>
+            <DialogTitle className="font-serif italic font-bold text-lg text-primary">{confirmDialog.title}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-2 leading-relaxed">{confirmDialog.description}</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0 mt-4">
             <Button
               variant="outline"
+              className="tactile-btn text-xs font-semibold"
               onClick={() =>
                 setConfirmDialog((prev) => ({ ...prev, open: false }))
               }
@@ -334,6 +362,7 @@ export function PhotographersClient({
             </Button>
             <Button
               variant="destructive"
+              className="tactile-btn text-xs font-semibold bg-destructive hover:bg-destructive/90"
               onClick={confirmDialog.action}
               disabled={loading}
             >

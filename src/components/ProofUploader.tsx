@@ -20,6 +20,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
+      if (disabled) return;
       e.preventDefault();
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile && droppedFile.type.startsWith("image/")) {
@@ -29,7 +30,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         toast.error(COPY.COMPONENTS.UPLOAD_IMAGE_ONLY);
       }
     },
-    []
+    [disabled]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,10 +64,10 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
 
   if (uploaded) {
     return (
-      <Card className="border-primary/20 bg-primary/10">
+      <Card className="border-brand/20 bg-brand-light/20 rounded-xl overflow-hidden shadow-sm">
         <CardContent className="flex items-center gap-3 p-4">
-          <CheckCircle className="h-5 w-5 text-primary" />
-          <span className="text-primary">
+          <CheckCircle className="h-5 w-5 text-brand" strokeWidth={1.5} />
+          <span className="text-sm font-semibold text-brand-foreground">
             {COPY.COMPONENTS.PROOF_UPLOADED_WAITING}
           </span>
         </CardContent>
@@ -80,43 +81,50 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
-          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+          className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
+            disabled 
+              ? "opacity-50 cursor-not-allowed border-border" 
+              : "border-border/80 hover:border-brand/60 hover:bg-brand-light/10"
+          }`}
         >
-          <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mb-2">
+          <div className="mx-auto w-12 h-12 rounded-full bg-muted/60 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <Upload className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
+          </div>
+          <p className="text-xs font-semibold text-foreground mb-1 leading-relaxed">
             {COPY.COMPONENTS.DRAG_DROP_HINT}
           </p>
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-[10px] text-muted-foreground mb-4">
             {COPY.COMPONENTS.OR_CLICK_SELECT}
           </p>
-          <label>
+          <label className={disabled ? "pointer-events-none" : "cursor-pointer"}>
             <input
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
+              disabled={disabled}
             />
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="tactile-btn text-xs font-semibold" disabled={disabled}>
               {COPY.COMPONENTS.SELECT_FILE}
             </Button>
           </label>
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative border border-border/80 rounded-2xl overflow-hidden bg-muted/30 p-2">
           {preview && (
             <img
               src={preview}
               alt={COPY.COMPONENTS.PROOF_PREVIEW_ALT}
-              className="max-h-64 mx-auto rounded-lg object-contain"
+              className="max-h-56 mx-auto rounded-xl object-contain shadow-xs bg-white"
             />
           )}
           <Button
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2"
+            className="absolute top-4 right-4 h-7 w-7 rounded-lg shadow-sm tactile-btn bg-destructive hover:bg-destructive/90"
             onClick={handleRemove}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" strokeWidth={2} />
           </Button>
         </div>
       )}
@@ -125,7 +133,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
         <Button
           onClick={handleSubmit}
           disabled={uploading || disabled}
-          className="w-full"
+          className="w-full h-10 tactile-btn bg-primary text-primary-foreground hover:bg-primary/95 shadow-sm text-xs font-semibold pt-2.5 mt-2"
         >
           {uploading ? COPY.COMPONENTS.SUBMITTING_PROOF : COPY.COMPONENTS.SUBMIT_PROOF}
         </Button>
