@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import COPY from "@/lib/constants/copy";
+import { useImageCompression } from "@/hooks/useImageCompression";
 
 interface ProofUploaderProps {
   onUpload: (file: File) => Promise<void>;
@@ -18,6 +19,8 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { compressUtilityImage } = useImageCompression();
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -50,7 +53,9 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
     if (!file) return;
     setUploading(true);
     try {
-      await onUpload(file);
+      // Compress screenshot to ensure < 300KB for instant upload and zero timeout
+      const compressedFile = await compressUtilityImage(file);
+      await onUpload(compressedFile);
       setUploaded(true);
       toast.success(COPY.COMPONENTS.PROOF_UPLOADED);
     } catch (err) {

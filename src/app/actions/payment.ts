@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase-server";
+import { createSupabaseServer, createSupabaseAdmin } from "@/lib/supabase-server";
 import { sendPaymentNotification } from "@/lib/resend";
 import { penceToPounds, penceToRMB } from "@/lib/utils";
 
@@ -23,9 +23,24 @@ export async function uploadPaymentProof(orderId: string, file: File) {
     throw new Error("Order is not in pending payment status");
   }
 
-  // Upload file to Supabase Storage
+  const admin = createSupabaseAdmin();
+
+  // Self-healing: Pre-create storage bucket if it doesn't exist on remote instance
+  try {
+    const { data: bucket } = await admin.storage.getBucket("payment-proofs");
+    if (!bucket) {
+      await admin.storage.createBucket("payment-proofs", {
+        public: true,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+      });
+    }
+  } catch {
+    // Ignore error if already created
+  }
+
+  // Upload file to Supabase Storage via Admin to bypass RLS policies
   const fileName = `${user.id}/${orderId}-${Date.now()}.${file.name.split(".").pop()}`;
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await admin.storage
     .from("payment-proofs")
     .upload(fileName, file);
 
@@ -34,7 +49,7 @@ export async function uploadPaymentProof(orderId: string, file: File) {
   // Get public URL
   const {
     data: { publicUrl },
-  } = supabase.storage.from("payment-proofs").getPublicUrl(uploadData.path);
+  } = admin.storage.from("payment-proofs").getPublicUrl(uploadData.path);
 
   // Update order: clear hold timer, set proof submitted
   const { error: updateError } = await supabase
