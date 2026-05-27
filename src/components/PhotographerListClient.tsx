@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Camera, ArrowRight, GraduationCap, ChevronLeft, ChevronRight, Eye, Sparkles, ShieldCheck, Zap, Award } from "lucide-react";
@@ -48,9 +48,11 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
   const [cardImageIndices, setCardImageIndices] = useState<Record<string, number>>({});
   const [activeLightboxPhotographer, setActiveLightboxPhotographer] = useState<Photographer | null>(null);
 
+  const touchStartX = useRef<number>(0);
+
   const getActiveImageIndex = (id: string) => cardImageIndices[id] || 0;
 
-  const handlePrevImage = (e: React.MouseEvent, p: Photographer, images: string[]) => {
+  const handlePrevImage = (e: React.MouseEvent | React.TouchEvent, p: Photographer, images: string[]) => {
     e.preventDefault();
     e.stopPropagation();
     const currIndex = getActiveImageIndex(p.id);
@@ -58,12 +60,38 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
     setCardImageIndices((prev) => ({ ...prev, [p.id]: nextIndex }));
   };
 
-  const handleNextImage = (e: React.MouseEvent, p: Photographer, images: string[]) => {
+  const handleNextImage = (e: React.MouseEvent | React.TouchEvent, p: Photographer, images: string[]) => {
     e.preventDefault();
     e.stopPropagation();
     const currIndex = getActiveImageIndex(p.id);
     const nextIndex = currIndex < images.length - 1 ? currIndex + 1 : 0;
     setCardImageIndices((prev) => ({ ...prev, [p.id]: nextIndex }));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, p: Photographer, images: string[]) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (Math.abs(diff) > 50) { // 50px threshold for swipes
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (diff > 0) {
+        // Swipe left -> Next image
+        const currIndex = getActiveImageIndex(p.id);
+        const nextIndex = currIndex < images.length - 1 ? currIndex + 1 : 0;
+        setCardImageIndices((prev) => ({ ...prev, [p.id]: nextIndex }));
+      } else {
+        // Swipe right -> Prev image
+        const currIndex = getActiveImageIndex(p.id);
+        const nextIndex = currIndex > 0 ? currIndex - 1 : images.length - 1;
+        setCardImageIndices((prev) => ({ ...prev, [p.id]: nextIndex }));
+      }
+    }
   };
 
   const handleOpenLightbox = (e: React.MouseEvent, p: Photographer) => {
@@ -266,7 +294,11 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
                       {/* Media container - Expanded to cinematic widescreen 16:9 */}
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted/20 border-b border-border/40 group/media">
                         {hasPortfolio ? (
-                          <div className="relative w-full h-full">
+                          <div 
+                            className="relative w-full h-full"
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={(e) => handleTouchEnd(e, p, portfolioImages)}
+                          >
                             <Image
                               src={portfolioImages[activeIdx]}
                               alt={`${p.full_name} 摄影代表作`}
@@ -278,20 +310,22 @@ export function PhotographerListClient({ initialPhotographers }: PhotographerLis
 
                             {/* Slide Navigation Overlay Trigger Arrows */}
                             {portfolioImages.length > 1 && (
-                              <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300">
+                              <div className="absolute inset-0 flex items-center justify-between px-4 opacity-70 sm:opacity-0 sm:group-hover/media:opacity-100 transition-opacity duration-300 pointer-events-none">
                                 <button
                                   onClick={(e) => handlePrevImage(e, p, portfolioImages)}
-                                  className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transform hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                  onTouchEnd={(e) => handlePrevImage(e, p, portfolioImages)}
+                                  className="p-2 rounded-full bg-black/55 border border-white/10 text-white backdrop-blur-xs active:scale-95 transition-all cursor-pointer pointer-events-auto shadow-sm"
                                   aria-label="Previous preview"
                                 >
-                                  <ChevronLeft className="h-4.5 w-4.5" strokeWidth={2.5} />
+                                  <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
                                 </button>
                                 <button
                                   onClick={(e) => handleNextImage(e, p, portfolioImages)}
-                                  className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transform hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                  onTouchEnd={(e) => handleNextImage(e, p, portfolioImages)}
+                                  className="p-2 rounded-full bg-black/55 border border-white/10 text-white backdrop-blur-xs active:scale-95 transition-all cursor-pointer pointer-events-auto shadow-sm"
                                   aria-label="Next preview"
                                 >
-                                  <ChevronRight className="h-4.5 w-4.5" strokeWidth={2.5} />
+                                  <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
                                 </button>
                               </div>
                             )}
