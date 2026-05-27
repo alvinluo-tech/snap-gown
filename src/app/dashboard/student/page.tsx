@@ -120,7 +120,7 @@ export default async function StudentDashboard() {
                 <Clock className="h-4 w-4" strokeWidth={1.5} />
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-sm text-brand-foreground">
+                <p className="font-semibold text-sm text-brand-foreground dark:text-brand">
                   付款凭证待摄影师核对中
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed max-w-[90ch]">

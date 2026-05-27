@@ -77,7 +77,7 @@ export function ProofUploader({ onUpload, disabled }: ProofUploaderProps) {
       <Card className="border-brand/20 bg-brand-light/20 rounded-xl overflow-hidden shadow-sm">
         <CardContent className="flex items-center gap-3 p-4">
           <CheckCircle className="h-5 w-5 text-brand" strokeWidth={1.5} />
-          <span className="text-sm font-semibold text-brand-foreground">
+          <span className="text-sm font-semibold text-brand-foreground dark:text-brand">
             {COPY.COMPONENTS.PROOF_UPLOADED_WAITING}
           </span>
         </CardContent>

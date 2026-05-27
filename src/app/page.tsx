@@ -104,13 +104,13 @@ export default async function HomePage() {
                     {profile?.full_name || user.email}
                   </span>
                 </Link>
-                <Link href={dashboardHref}>
+                <Link href={dashboardHref} className="hidden sm:inline-block">
                   <Button size="sm" className="tactile-btn font-medium bg-primary text-primary-foreground hover:bg-primary/95 shadow-sm">
                     {COPY.COMMON.DASHBOARD}
                   </Button>
                 </Link>
                 {isAdmin && (
-                  <Link href="/dashboard/admin">
+                  <Link href="/dashboard/admin" className="hidden sm:inline-block">
                     <Button size="sm" variant="outline" className="tactile-btn border-brand/20 text-brand hover:bg-brand/5">
                       <Shield className="h-4 w-4 mr-1.5" strokeWidth={1.5} />
                       {COPY.COMMON.ADMIN}
