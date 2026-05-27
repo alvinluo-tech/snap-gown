@@ -35,6 +35,20 @@ export function parsePortfolio(json: unknown): string[] {
   return [];
 }
 
+export function parseGowns(json: unknown): { degree?: string; size?: string }[] {
+  if (!json) return [];
+  if (Array.isArray(json)) return json as { degree?: string; size?: string }[];
+  if (typeof json === "string") {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) return parsed as { degree?: string; size?: string }[];
+    } catch {
+      // Ignore
+    }
+  }
+  return [];
+}
+
 interface Photographer {
   id: string;
   full_name: string;
@@ -177,19 +191,20 @@ export function PhotographerBookingClient({
             <div className="space-y-2.5">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold block">学士服储备支持</span>
               <div className="flex flex-wrap gap-2">
-                {Array.isArray(photographer.gowns_json) && photographer.gowns_json.length > 0 ? (
-                  (photographer.gowns_json as { degree?: string; size?: string }[]).map(
-                    (g, i) => (
+                {(() => {
+                  const gownsList = parseGowns(photographer.gowns_json);
+                  return gownsList.length > 0 ? (
+                    gownsList.map((g, i) => (
                       <Badge key={i} variant="outline" className="border-border/60 text-xs text-muted-foreground bg-muted/20 px-3 py-0.5 rounded-lg">
                         🎓 {g.degree} - {g.size}
                       </Badge>
-                    )
-                  )
-                ) : (
-                  <Badge variant="outline" className="border-border/60 text-xs text-muted-foreground bg-muted/20 px-3 py-0.5 rounded-lg">
-                    🎓 学生自备学士服
-                  </Badge>
-                )}
+                    ))
+                  ) : (
+                    <Badge variant="outline" className="border-border/60 text-xs text-muted-foreground bg-muted/20 px-3 py-0.5 rounded-lg">
+                      🎓 学生自备学士服
+                    </Badge>
+                  );
+                })()}
               </div>
             </div>
 

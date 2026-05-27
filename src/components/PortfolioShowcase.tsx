@@ -87,7 +87,7 @@ export function PortfolioShowcase({
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (touchStart === null || touchEnd === null) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -123,31 +123,20 @@ export function PortfolioShowcase({
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="columns-1 sm:columns-2 md:columns-3 gap-6 [column-fill:_balance]">
             {portfolio.map((url, idx) => {
-              let gridClass = "relative aspect-[3/2] overflow-hidden rounded-[20px] border border-border/40 bg-muted/30 shadow-xs cursor-pointer group hover-lift transition-all duration-500 ease-out";
-              
-              if (idx === 0) {
-                gridClass = "relative aspect-[4/3] sm:col-span-2 md:col-span-2 md:row-span-2 overflow-hidden rounded-[24px] border border-border/50 bg-muted/30 shadow-sm cursor-pointer group hover-lift transition-all duration-500 ease-out";
-              } else if (idx === 3) {
-                gridClass = "relative aspect-[3/4] overflow-hidden rounded-[20px] border border-border/40 bg-muted/30 shadow-xs cursor-pointer group hover-lift transition-all duration-500 ease-out";
-              }
-
               return (
                 <div
                   key={idx}
-                  className={gridClass}
+                  className="break-inside-avoid mb-6 relative overflow-hidden rounded-[20px] border border-border/40 bg-muted/30 shadow-xs cursor-pointer group hover-lift transition-all duration-500 ease-out"
                   onClick={() => handleOpen(idx)}
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={url}
                     alt={`${photographerName} 作品展示 ${idx + 1}`}
-                    fill
-                    sizes={idx === 0 ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"}
-                    priority={idx < 3}
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    placeholder="blur"
-                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                    loading="lazy"
+                    className="w-full h-auto object-cover rounded-[20px] transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                   />
                   
                   <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">

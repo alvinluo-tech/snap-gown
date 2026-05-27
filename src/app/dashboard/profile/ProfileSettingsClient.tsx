@@ -51,6 +51,34 @@ interface ProfileSettingsClientProps {
   profile: Profile;
 }
 
+function parsePortfolio(json: unknown): string[] {
+  if (!json) return [];
+  if (Array.isArray(json)) return json as string[];
+  if (typeof json === "string") {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) return parsed as string[];
+    } catch {
+      // Ignore
+    }
+  }
+  return [];
+}
+
+function parseGowns(json: unknown): { degree: string; size: string }[] {
+  if (!json) return [];
+  if (Array.isArray(json)) return json as { degree: string; size: string }[];
+  if (typeof json === "string") {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) return parsed as { degree: string; size: string }[];
+    } catch {
+      // Ignore
+    }
+  }
+  return [];
+}
+
 export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
   const router = useRouter();
 
@@ -61,10 +89,10 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   const [wechatQrUrl, setWechatQrUrl] = useState(profile.wechat_qr_url);
   const [gowns, setGowns] = useState<{ degree: string; size: string }[]>(
-    (profile.gowns_json as { degree: string; size: string }[] | null) || []
+    parseGowns(profile.gowns_json)
   );
   const [portfolio, setPortfolio] = useState<string[]>(
-    (profile.portfolio_json as string[] | null) || []
+    parsePortfolio(profile.portfolio_json)
   );
 
   // Business settings (photographer-only)
@@ -575,13 +603,14 @@ export function ProfileSettingsClient({ profile }: ProfileSettingsClientProps) {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="columns-2 sm:columns-3 gap-4 [column-fill:_balance]">
                       {portfolio.map((url, i) => (
-                        <div key={i} className="relative aspect-[3/2] rounded-xl overflow-hidden border bg-muted shadow-sm group">
+                        <div key={i} className="break-inside-avoid mb-4 relative rounded-xl overflow-hidden border bg-muted shadow-sm group">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={url}
                             alt={`Portfolio ${i + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                             <Button
