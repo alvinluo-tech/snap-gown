@@ -11,11 +11,11 @@ export function useImageCompression() {
     setIsCompressing(true); setProgress(0);
 
     const options = {
-      maxSizeMB: 0.29,
-      maxWidthOrHeight: 1200,
+      maxSizeMB: 0.95, // 950KB gives ample budget for crystal-clear receipt text
+      maxWidthOrHeight: 2048, // 2048px preserves vertical smartphone screenshots perfectly
       useWebWorker: true,
       fileType: 'image/jpeg' as const,
-      initialQuality: 0.80,
+      initialQuality: 0.92, // 92% quality completely avoids JPEG artifacts around small numbers
       maxIteration: 5
     };
 
